@@ -1,38 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PF Esports Dashboard</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f2f5; }
-    .hidden { display: none; }
-    nav { background:#111; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; }
-    nav a { color:#fff; margin-left:15px; text-decoration:none; cursor:pointer; }
-    nav a:hover { text-decoration:underline; }
-    .sidebar { width:220px; background:#222; color:#fff; height:100vh; position:fixed; top:0; left:0; padding-top:60px; display:flex; flex-direction:column; }
-    .sidebar button { background:none; border:none; color:#fff; padding:15px; text-align:left; cursor:pointer; width:100%; font-size:15px; }
-    .sidebar button:hover { background:#333; }
-    .content { margin-left:240px; padding:20px; min-height:100vh; }
-    h2 { margin-top:0; }
-    input, button, textarea { padding:10px; margin:5px 0; width:100%; border-radius:5px; border:1px solid #ccc; }
-    button { background:#007bff; color:#fff; border:none; cursor:pointer; }
-    button:hover { background:#0056b3; }
-    .card { background:#fff; padding:20px; margin-bottom:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
-    .chat-box { max-height:300px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px; }
-    .chat-message { margin-bottom:5px; }
-    .gallery img { width:150px; margin:5px; border-radius:5px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PF Esports Dashboard</title>
+<style>
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f2f5; }
+.hidden { display: none; }
+nav { background:#111; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; }
+nav a { color:#fff; margin-left:15px; text-decoration:none; cursor:pointer; }
+nav a:hover { text-decoration:underline; }
+.sidebar { width:220px; background:#222; color:#fff; height:100vh; position:fixed; top:0; left:0; padding-top:60px; display:flex; flex-direction:column; }
+.sidebar button { background:none; border:none; color:#fff; padding:15px; text-align:left; cursor:pointer; width:100%; font-size:15px; }
+.sidebar button:hover { background:#333; }
+.content { margin-left:240px; padding:20px; min-height:100vh; }
+h2 { margin-top:0; }
+input, button, textarea { padding:10px; margin:5px 0; width:100%; border-radius:5px; border:1px solid #ccc; }
+button { background:#007bff; color:#fff; border:none; cursor:pointer; }
+button:hover { background:#0056b3; }
+.card { background:#fff; padding:20px; margin-bottom:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
+.chat-box { max-height:300px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px; }
+.chat-message { margin-bottom:5px; }
+.gallery img { width:150px; margin:5px; border-radius:5px; }
+</style>
 </head>
 <body>
 
-<!-- ===== Login Page ===== -->
-<div id="login-page" class="container" style="max-width:400px; margin:100px auto;">
-  <h2>Login to PF Esports</h2>
+<!-- ===== Sign Up / Login Page ===== -->
+<div id="auth-page" class="container" style="max-width:400px; margin:50px auto;">
+  <h2>PF Esports</h2>
   <div class="card">
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
+    <div id="signup-form">
+      <h3>Sign Up</h3>
+      <input type="text" id="signup-name" placeholder="Name" />
+      <input type="text" id="signup-username" placeholder="Username" />
+      <input type="text" id="signup-team" placeholder="Team Name (Optional)" />
+      <input type="text" id="signup-ign" placeholder="In-game Name" />
+      <input type="password" id="signup-password" placeholder="Password" />
+      <button onclick="signup()">Sign Up</button>
+      <p>Already have an account? <a href="#" onclick="toggleAuth('login')">Login</a></p>
+    </div>
+
+    <div id="login-form" class="hidden">
+      <h3>Login</h3>
+      <input type="text" id="login-username" placeholder="Username" />
+      <input type="password" id="login-password" placeholder="Password" />
+      <button onclick="login()">Login</button>
+      <p>Don't have an account? <a href="#" onclick="toggleAuth('signup')">Sign Up</a></p>
+    </div>
   </div>
 </div>
 
@@ -46,8 +61,10 @@
   </nav>
 
   <div class="sidebar">
+    <button onclick="showPage('profile')">Profile</button>
     <button onclick="showPage('player-stats')">Player Stats</button>
     <button onclick="showPage('teams')">Teams</button>
+    <button onclick="showPage('create-team')">Create Team</button>
     <button onclick="showPage('tournaments')">Tournaments</button>
     <button onclick="showPage('scoreboard')">Scoreboard</button>
     <button onclick="showPage('chat')">Chat</button>
@@ -56,13 +73,21 @@
   </div>
 
   <div class="content">
+    <!-- Profile -->
+    <div id="profile" class="hidden">
+      <h2>My Profile</h2>
+      <div class="card">
+        <p>Name: <span id="profile-name"></span></p>
+        <p>Username: <span id="profile-username"></span></p>
+        <p>Team: <span id="profile-team"></span></p>
+        <p>In-game Name: <span id="profile-ign"></span></p>
+      </div>
+    </div>
+
     <!-- Player Stats -->
     <div id="player-stats" class="hidden">
       <h2>Player Stats</h2>
       <div class="card">
-        <p>Name: John Doe</p>
-        <p>ID: 101</p>
-        <p>Team: Alpha</p>
         <p>Matches Played: 15</p>
         <p>Kills: 120</p>
         <p>Score: 950</p>
@@ -73,39 +98,35 @@
     <div id="teams" class="hidden">
       <h2>Teams</h2>
       <div class="card">
-        <p>Team Name: Alpha</p>
-        <p>Members: John, Alice, Bob</p>
+        <p>Team Alpha: Members - John, Alice, Bob</p>
         <p>Matches Won: 5</p>
       </div>
+    </div>
+
+    <!-- Create Team -->
+    <div id="create-team" class="hidden">
+      <h2>Create Team</h2>
       <div class="card">
-        <p>Team Name: Beta</p>
-        <p>Members: Mike, Sarah, Lee</p>
-        <p>Matches Won: 3</p>
+        <input type="text" id="new-team-name" placeholder="Team Name" />
+        <input type="text" id="new-team-players" placeholder="Squad Players (comma separated)" />
+        <button onclick="createTeam()">Create Team</button>
       </div>
+      <div id="team-list" class="card"></div>
     </div>
 
     <!-- Tournaments -->
     <div id="tournaments" class="hidden">
       <h2>Tournaments</h2>
-      <div class="card">
-        <p>Tournament: Spring Cup</p>
-        <p>Status: Ongoing</p>
-        <p>Registered Teams: 8</p>
-      </div>
-      <div class="card">
-        <p>Tournament: Summer Clash</p>
-        <p>Status: Upcoming</p>
-        <p>Registered Teams: 12</p>
-      </div>
+      <div class="card">Spring Cup - Ongoing</div>
+      <div class="card">Summer Clash - Upcoming</div>
     </div>
 
     <!-- Scoreboard -->
     <div id="scoreboard" class="hidden">
-      <h2>Live Scoreboard</h2>
+      <h2>Scoreboard</h2>
       <div class="card">
         <p>Team Alpha: 120</p>
         <p>Team Beta: 100</p>
-        <p>Team Gamma: 80</p>
       </div>
     </div>
 
@@ -121,9 +142,8 @@
     <div id="gallery" class="hidden">
       <h2>Gallery</h2>
       <div class="card gallery">
-        <img src="https://via.placeholder.com/150" alt="Game Image 1">
-        <img src="https://via.placeholder.com/150" alt="Game Image 2">
-        <img src="https://via.placeholder.com/150" alt="Game Image 3">
+        <img src="https://via.placeholder.com/150" alt="Game Image">
+        <img src="https://via.placeholder.com/150" alt="Game Image">
       </div>
     </div>
 
@@ -132,56 +152,103 @@
       <h2>Notifications</h2>
       <div class="card">
         <p>[10:00] Tournament Spring Cup starts today!</p>
-        <p>[09:30] Team Beta has registered for Summer Clash.</p>
-        <p>[09:00] New player John Doe joined PF Esports.</p>
       </div>
     </div>
-
   </div>
 </div>
 
 <script>
-  // Login logic
-  function login() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    if(email && password) {
-      document.getElementById('login-page').classList.add('hidden');
-      document.getElementById('dashboard').classList.remove('hidden');
-      showPage('player-stats'); // default page after login
-    } else {
-      alert('Enter email and password');
+let users = []; // store signup info
+
+function toggleAuth(form) {
+  if(form==='signup'){
+    document.getElementById('signup-form').classList.remove('hidden');
+    document.getElementById('login-form').classList.add('hidden');
+  } else {
+    document.getElementById('signup-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+  }
+}
+
+function signup() {
+  const name = document.getElementById('signup-name').value;
+  const username = document.getElementById('signup-username').value;
+  const team = document.getElementById('signup-team').value;
+  const ign = document.getElementById('signup-ign').value;
+  const password = document.getElementById('signup-password').value;
+  if(name && username && ign && password){
+    if(users.find(u=>u.username===username)){
+      alert('Username already exists');
+      return;
     }
-  }
+    users.push({name, username, team, ign, password});
+    alert('Sign Up Successful! You can login now.');
+    toggleAuth('login');
+  } else { alert('Fill all required fields'); }
+}
 
-  function logout() {
-    document.getElementById('dashboard').classList.add('hidden');
-    document.getElementById('login-page').classList.remove('hidden');
-  }
+let currentUser = null;
+function login() {
+  const username = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
+  const user = users.find(u=>u.username===username && u.password===password);
+  if(user){
+    currentUser = user;
+    document.getElementById('auth-page').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    showPage('profile');
+    updateProfile();
+  } else { alert('Invalid credentials'); }
+}
 
-  // Show specific page
-  function showPage(pageId) {
-    const pages = ['player-stats','teams','tournaments','scoreboard','chat','gallery','notifications'];
-    pages.forEach(id => {
-      document.getElementById(id).classList.add('hidden');
-    });
-    document.getElementById(pageId).classList.remove('hidden');
-  }
+function logout() {
+  currentUser = null;
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('auth-page').classList.remove('hidden');
+}
 
-  // Chat logic (demo)
-  function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    if(msg){
-      const chatBox = document.getElementById('chat-box');
-      const p = document.createElement('div');
-      p.classList.add('chat-message');
-      p.innerText = "You: " + msg;
-      chatBox.appendChild(p);
-      chatBox.scrollTop = chatBox.scrollHeight;
-      input.value = '';
-    }
+function showPage(pageId) {
+  const pages = ['profile','player-stats','teams','create-team','tournaments','scoreboard','chat','gallery','notifications'];
+  pages.forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById(pageId).classList.remove('hidden');
+}
+
+function updateProfile(){
+  if(currentUser){
+    document.getElementById('profile-name').innerText = currentUser.name;
+    document.getElementById('profile-username').innerText = currentUser.username;
+    document.getElementById('profile-team').innerText = currentUser.team || 'Not Assigned';
+    document.getElementById('profile-ign').innerText = currentUser.ign;
   }
+}
+
+// Chat Demo
+function sendMessage(){
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if(msg){
+    const chatBox = document.getElementById('chat-box');
+    const p = document.createElement('div');
+    p.classList.add('chat-message');
+    p.innerText = currentUser.username + ": " + msg;
+    chatBox.appendChild(p);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    input.value = '';
+  }
+}
+
+// Create Team
+function createTeam(){
+  const teamName = document.getElementById('new-team-name').value;
+  const players = document.getElementById('new-team-players').value;
+  if(teamName && players){
+    const div = document.createElement('div');
+    div.classList.add('card');
+    div.innerHTML = `<strong>${teamName}</strong> - Players: ${players}`;
+    document.getElementById('team-list').appendChild(div);
+    alert('Team Created!');
+  } else { alert('Fill all fields'); }
+}
 </script>
 
 </body>
