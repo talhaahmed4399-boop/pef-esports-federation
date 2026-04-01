@@ -3,257 +3,186 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PF Esports System</title>
+  <title>PF Esports Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    h1, h2 { color: #1e88e5; }
-    form { margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-    input, select { display: block; margin: 8px 0; padding: 8px; width: 100%; }
-    button { padding: 10px 15px; background: #1e88e5; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
-    button:hover { background: #1565c0; }
-    .section { margin-bottom: 30px; }
-    table { width: 100%; border-collapse: collapse; background: #fff; }
-    th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
-    th { background: #1e88e5; color: white; }
-    .adminContent div { margin-bottom: 5px; }
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f2f5; }
+    .hidden { display: none; }
+    nav { background:#111; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; }
+    nav a { color:#fff; margin-left:15px; text-decoration:none; cursor:pointer; }
+    nav a:hover { text-decoration:underline; }
+    .sidebar { width:220px; background:#222; color:#fff; height:100vh; position:fixed; top:0; left:0; padding-top:60px; display:flex; flex-direction:column; }
+    .sidebar button { background:none; border:none; color:#fff; padding:15px; text-align:left; cursor:pointer; width:100%; font-size:15px; }
+    .sidebar button:hover { background:#333; }
+    .content { margin-left:240px; padding:20px; min-height:100vh; }
+    h2 { margin-top:0; }
+    input, button, textarea { padding:10px; margin:5px 0; width:100%; border-radius:5px; border:1px solid #ccc; }
+    button { background:#007bff; color:#fff; border:none; cursor:pointer; }
+    button:hover { background:#0056b3; }
+    .card { background:#fff; padding:20px; margin-bottom:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
+    .chat-box { max-height:300px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px; }
+    .chat-message { margin-bottom:5px; }
+    .gallery img { width:150px; margin:5px; border-radius:5px; }
   </style>
 </head>
 <body>
 
-  <h1>PF Esports Dashboard</h1>
+<!-- ===== Login Page ===== -->
+<div id="login-page" class="container" style="max-width:400px; margin:100px auto;">
+  <h2>Login to PF Esports</h2>
+  <div class="card">
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+  </div>
+</div>
 
-  <!-- Player Registration -->
-  <div class="section">
-    <h2>Player Registration</h2>
-    <form id="playerForm">
-      <input type="text" id="playerName" placeholder="Player Name" required />
-      <input type="email" id="playerEmail" placeholder="Email" required />
-      <input type="password" id="playerPassword" placeholder="Password" required />
-      <button type="submit">Register Player</button>
-    </form>
+<!-- ===== Dashboard ===== -->
+<div id="dashboard" class="hidden">
+  <nav>
+    <div>PF Esports</div>
+    <div>
+      <a onclick="logout()">Logout</a>
+    </div>
+  </nav>
+
+  <div class="sidebar">
+    <button onclick="showPage('player-stats')">Player Stats</button>
+    <button onclick="showPage('teams')">Teams</button>
+    <button onclick="showPage('tournaments')">Tournaments</button>
+    <button onclick="showPage('scoreboard')">Scoreboard</button>
+    <button onclick="showPage('chat')">Chat</button>
+    <button onclick="showPage('gallery')">Gallery</button>
+    <button onclick="showPage('notifications')">Notifications</button>
   </div>
 
-  <!-- Team Creation -->
-  <div class="section">
-    <h2>Team Creation</h2>
-    <form id="teamForm">
-      <input type="text" id="teamName" placeholder="Team Name" required />
-      <input type="text" id="teamMembers" placeholder="Member UIDs (comma separated)" />
-      <button type="submit">Create Team</button>
-    </form>
+  <div class="content">
+    <!-- Player Stats -->
+    <div id="player-stats" class="hidden">
+      <h2>Player Stats</h2>
+      <div class="card">
+        <p>Name: John Doe</p>
+        <p>ID: 101</p>
+        <p>Team: Alpha</p>
+        <p>Matches Played: 15</p>
+        <p>Kills: 120</p>
+        <p>Score: 950</p>
+      </div>
+    </div>
+
+    <!-- Teams -->
+    <div id="teams" class="hidden">
+      <h2>Teams</h2>
+      <div class="card">
+        <p>Team Name: Alpha</p>
+        <p>Members: John, Alice, Bob</p>
+        <p>Matches Won: 5</p>
+      </div>
+      <div class="card">
+        <p>Team Name: Beta</p>
+        <p>Members: Mike, Sarah, Lee</p>
+        <p>Matches Won: 3</p>
+      </div>
+    </div>
+
+    <!-- Tournaments -->
+    <div id="tournaments" class="hidden">
+      <h2>Tournaments</h2>
+      <div class="card">
+        <p>Tournament: Spring Cup</p>
+        <p>Status: Ongoing</p>
+        <p>Registered Teams: 8</p>
+      </div>
+      <div class="card">
+        <p>Tournament: Summer Clash</p>
+        <p>Status: Upcoming</p>
+        <p>Registered Teams: 12</p>
+      </div>
+    </div>
+
+    <!-- Scoreboard -->
+    <div id="scoreboard" class="hidden">
+      <h2>Live Scoreboard</h2>
+      <div class="card">
+        <p>Team Alpha: 120</p>
+        <p>Team Beta: 100</p>
+        <p>Team Gamma: 80</p>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div id="chat" class="hidden">
+      <h2>Chat</h2>
+      <div class="card chat-box" id="chat-box"></div>
+      <input type="text" id="chat-input" placeholder="Type a message" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <!-- Gallery -->
+    <div id="gallery" class="hidden">
+      <h2>Gallery</h2>
+      <div class="card gallery">
+        <img src="https://via.placeholder.com/150" alt="Game Image 1">
+        <img src="https://via.placeholder.com/150" alt="Game Image 2">
+        <img src="https://via.placeholder.com/150" alt="Game Image 3">
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div id="notifications" class="hidden">
+      <h2>Notifications</h2>
+      <div class="card">
+        <p>[10:00] Tournament Spring Cup starts today!</p>
+        <p>[09:30] Team Beta has registered for Summer Clash.</p>
+        <p>[09:00] New player John Doe joined PF Esports.</p>
+      </div>
+    </div>
+
   </div>
+</div>
 
-  <!-- Tournament Registration -->
-  <div class="section">
-    <h2>Tournament Registration</h2>
-    <form id="tournamentForm">
-      <input type="text" id="tournamentName" placeholder="Tournament Name" required />
-      <input type="date" id="tournamentDate" required />
-      <button type="submit">Register Tournament</button>
-    </form>
-  </div>
+<script>
+  // Login logic
+  function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    if(email && password) {
+      document.getElementById('login-page').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      showPage('player-stats'); // default page after login
+    } else {
+      alert('Enter email and password');
+    }
+  }
 
-  <!-- Live Scoreboard -->
-  <div class="section">
-    <h2>Live Scoreboard</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Player Name</th>
-          <th>Email</th>
-          <th>Created At</th>
-        </tr>
-      </thead>
-      <tbody id="scoreboardBody"></tbody>
-    </table>
-  </div>
+  function logout() {
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('login-page').classList.remove('hidden');
+  }
 
-  <!-- Admin Login -->
-  <div class="section">
-    <h2>Admin Login</h2>
-    <form id="adminForm">
-      <input type="email" id="adminEmail" placeholder="Admin Email" required />
-      <input type="password" id="adminPassword" placeholder="Password" required />
-      <button type="submit">Login as Admin</button>
-    </form>
-  </div>
-
-  <!-- Admin Panel -->
-  <div id="adminPanel" class="section" style="display:none;">
-    <h2>Admin Panel</h2>
-    <button onclick="loadAllPlayers()">View Players</button>
-    <button onclick="loadAllTeams()">View Teams</button>
-    <button onclick="loadAllTournaments()">View Tournaments</button>
-    <div id="adminContent" class="adminContent"></div>
-  </div>
-
-  <!-- Firebase + App Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-    // 🔹 Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAEKBwriHQs8kPRW0384YTd1Y9vLFcPPqw",
-      authDomain: "pef-esports.firebaseapp.com",
-      databaseURL: "https://pef-esports-default-rtdb.firebaseio.com",
-      projectId: "pef-esports",
-      storageBucket: "pef-esports.firebasestorage.app",
-      messagingSenderId: "780528651745",
-      appId: "1:780528651745:web:f0a068a15a732b022496a0",
-      measurementId: "G-23RV4L7T1E"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    // 🔹 Player Registration
-    const playerForm = document.getElementById("playerForm");
-    playerForm.addEventListener("submit", async e => {
-      e.preventDefault();
-      const name = document.getElementById("playerName").value;
-      const email = document.getElementById("playerEmail").value;
-      const password = document.getElementById("playerPassword").value;
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
-        await addDoc(collection(db, "players"), { uid, name, email, approved: false, createdAt: new Date() });
-        alert("Player Registered! Waiting for admin approval.");
-        playerForm.reset();
-        loadScoreboard();
-      } catch(err) { alert("Error: " + err.message); }
+  // Show specific page
+  function showPage(pageId) {
+    const pages = ['player-stats','teams','tournaments','scoreboard','chat','gallery','notifications'];
+    pages.forEach(id => {
+      document.getElementById(id).classList.add('hidden');
     });
+    document.getElementById(pageId).classList.remove('hidden');
+  }
 
-    // 🔹 Team Creation
-    const teamForm = document.getElementById("teamForm");
-    teamForm.addEventListener("submit", async e => {
-      e.preventDefault();
-      const teamName = document.getElementById("teamName").value;
-      const members = document.getElementById("teamMembers").value.split(",").map(m => m.trim());
-      try {
-        await addDoc(collection(db, "teams"), { teamName, members, approved: false, createdAt: new Date() });
-        alert("Team Created! Waiting for admin approval.");
-        teamForm.reset();
-      } catch(err) { alert("Error: " + err.message); }
-    });
-
-    // 🔹 Tournament Registration
-    const tournamentForm = document.getElementById("tournamentForm");
-    tournamentForm.addEventListener("submit", async e => {
-      e.preventDefault();
-      const name = document.getElementById("tournamentName").value;
-      const date = document.getElementById("tournamentDate").value;
-      try {
-        await addDoc(collection(db, "tournaments"), { name, date, approved: false, createdAt: new Date() });
-        alert("Tournament Registered! Waiting for admin approval.");
-        tournamentForm.reset();
-      } catch(err) { alert("Error: " + err.message); }
-    });
-
-    // 🔹 Load Scoreboard (approved only)
-    async function loadScoreboard() {
-      const tbody = document.getElementById("scoreboardBody");
-      tbody.innerHTML = "";
-      const querySnapshot = await getDocs(collection(db, "players"));
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-        if(!data.approved) return; // skip unapproved
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${data.name}</td><td>${data.email}</td><td>${data.createdAt.toDate ? data.createdAt.toDate() : data.createdAt}</td>`;
-        tbody.appendChild(tr);
-      });
+  // Chat logic (demo)
+  function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if(msg){
+      const chatBox = document.getElementById('chat-box');
+      const p = document.createElement('div');
+      p.classList.add('chat-message');
+      p.innerText = "You: " + msg;
+      chatBox.appendChild(p);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      input.value = '';
     }
-    loadScoreboard();
+  }
+</script>
 
-    // 🔹 Admin Login
-    const ADMIN_EMAIL = "admin@pfesports.com";
-    const ADMIN_PASSWORD = "Admin123";
-    const adminForm = document.getElementById("adminForm");
-    const adminPanel = document.getElementById("adminPanel");
-    const adminContent = document.getElementById("adminContent");
-
-    adminForm.addEventListener("submit", e => {
-      e.preventDefault();
-      const email = document.getElementById("adminEmail").value;
-      const password = document.getElementById("adminPassword").value;
-      if(email === ADMIN_EMAIL && password === ADMIN_PASSWORD){
-        alert("Admin Logged In!");
-        adminForm.style.display = "none";
-        adminPanel.style.display = "block";
-      } else { alert("Invalid Credentials"); }
-    });
-
-    // 🔹 Admin Functions
-    async function approveDoc(collectionName, docId){
-      const d = doc(db, collectionName, docId);
-      await updateDoc(d, { approved: true });
-      alert("Approved!");
-    }
-
-    async function rejectDoc(collectionName, docId){
-      await deleteDoc(doc(db, collectionName, docId));
-      alert("Rejected & Deleted!");
-    }
-
-    async function deleteDocById(collectionName, docId){
-      if(confirm("Are you sure?")){
-        await deleteDoc(doc(db, collectionName, docId));
-        alert("Deleted!");
-      }
-    }
-
-    async function loadAllPlayers(){
-      adminContent.innerHTML = "<h3>Players</h3>";
-      const snapshot = await getDocs(collection(db, "players"));
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.innerHTML = `
-          ${data.name} | ${data.email} | Approved: ${data.approved}
-          <button onclick="approveDoc('players','${doc.id}'); loadAllPlayers();">Approve</button>
-          <button onclick="rejectDoc('players','${doc.id}'); loadAllPlayers();">Reject</button>
-          <button onclick="deleteDocById('players','${doc.id}'); loadAllPlayers();">Delete</button>
-        `;
-        adminContent.appendChild(div);
-      });
-    }
-
-    async function loadAllTeams(){
-      adminContent.innerHTML = "<h3>Teams</h3>";
-      const snapshot = await getDocs(collection(db, "teams"));
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.innerHTML = `
-          ${data.teamName} | Members: ${data.members.join(", ")} | Approved: ${data.approved}
-          <button onclick="approveDoc('teams','${doc.id}'); loadAllTeams();">Approve</button>
-          <button onclick="rejectDoc('teams','${doc.id}'); loadAllTeams();">Reject</button>
-          <button onclick="deleteDocById('teams','${doc.id}'); loadAllTeams();">Delete</button>
-        `;
-        adminContent.appendChild(div);
-      });
-    }
-
-    async function loadAllTournaments(){
-      adminContent.innerHTML = "<h3>Tournaments</h3>";
-      const snapshot = await getDocs(collection(db, "tournaments"));
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.innerHTML = `
-          ${data.name} | Date: ${data.date} | Approved: ${data.approved}
-          <button onclick="approveDoc('tournaments','${doc.id}'); loadAllTournaments();">Approve</button>
-          <button onclick="rejectDoc('tournaments','${doc.id}'); loadAllTournaments();">Reject</button>
-          <button onclick="deleteDocById('tournaments','${doc.id}'); loadAllTournaments();">Delete</button>
-        `;
-        adminContent.appendChild(div);
-      });
-    }
-
-  </script>
 </body>
 </html>
