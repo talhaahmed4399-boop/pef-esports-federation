@@ -1,0 +1,76 @@
+// Admin credentials (temporary for start)
+const ADMIN_EMAIL = "admin@pfesports.com";
+const ADMIN_PASSWORD = "Admin123";
+
+// Admin Login
+const adminForm = document.getElementById("adminForm");
+const adminPanel = document.getElementById("adminPanel");
+const adminContent = document.getElementById("adminContent");
+
+adminForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("adminEmail").value;
+  const password = document.getElementById("adminPassword").value;
+
+  if(email === ADMIN_EMAIL && password === ADMIN_PASSWORD){
+    alert("✅ Admin Logged In!");
+    adminForm.style.display = "none";
+    adminPanel.style.display = "block";
+  } else {
+    alert("❌ Invalid Admin Credentials");
+  }
+});
+
+// Load All Players
+async function loadAllPlayers(){
+  adminContent.innerHTML = "<h3>Players</h3>";
+  const querySnapshot = await getDocs(collection(db, "players"));
+  querySnapshot.forEach(doc => {
+    const data = doc.data();
+    const div = document.createElement("div");
+    div.innerHTML = `
+      ${data.name} | ${data.email} 
+      <button onclick="deleteDocById('players', '${doc.id}')">Delete</button>
+    `;
+    adminContent.appendChild(div);
+  });
+}
+
+// Delete function
+async function deleteDocById(collectionName, docId){
+  if(confirm("Are you sure you want to delete?")){
+    await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js")
+      .then(({ doc, deleteDoc }) => deleteDoc(doc(db, collectionName, docId)));
+    alert("Deleted!");
+    loadAllPlayers(); // reload
+  }
+}
+
+// Similar functions can be made for Teams and Tournaments
+async function loadAllTeams(){
+  adminContent.innerHTML = "<h3>Teams</h3>";
+  const querySnapshot = await getDocs(collection(db, "teams"));
+  querySnapshot.forEach(doc => {
+    const data = doc.data();
+    const div = document.createElement("div");
+    div.innerHTML = `
+      ${data.teamName} | Members: ${data.members.join(", ")} 
+      <button onclick="deleteDocById('teams', '${doc.id}')">Delete</button>
+    `;
+    adminContent.appendChild(div);
+  });
+}
+
+async function loadAllTournaments(){
+  adminContent.innerHTML = "<h3>Tournaments</h3>";
+  const querySnapshot = await getDocs(collection(db, "tournaments"));
+  querySnapshot.forEach(doc => {
+    const data = doc.data();
+    const div = document.createElement("div");
+    div.innerHTML = `
+      ${data.name} | Date: ${data.date} 
+      <button onclick="deleteDocById('tournaments', '${doc.id}')">Delete</button>
+    `;
+    adminContent.appendChild(div);
+  });
+}
