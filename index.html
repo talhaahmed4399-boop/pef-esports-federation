@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PF Esports Dashboard</title>
+  <title>PF Esports System</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    h1 { color: #1e88e5; }
+    h1, h2 { color: #1e88e5; }
     form { margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-    input { display: block; margin: 8px 0; padding: 8px; width: 100%; }
+    input, select { display: block; margin: 8px 0; padding: 8px; width: 100%; }
     button { padding: 10px 15px; background: #1e88e5; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
     button:hover { background: #1565c0; }
     .section { margin-bottom: 30px; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
     th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
     th { background: #1e88e5; color: white; }
+    .adminContent div { margin-bottom: 5px; }
   </style>
 </head>
 <body>
@@ -47,7 +48,7 @@
     <h2>Tournament Registration</h2>
     <form id="tournamentForm">
       <input type="text" id="tournamentName" placeholder="Tournament Name" required />
-      <input type="date" id="tournamentDate" placeholder="Tournament Date" required />
+      <input type="date" id="tournamentDate" required />
       <button type="submit">Register Tournament</button>
     </form>
   </div>
@@ -67,14 +68,33 @@
     </table>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Admin Login -->
+  <div class="section">
+    <h2>Admin Login</h2>
+    <form id="adminForm">
+      <input type="email" id="adminEmail" placeholder="Admin Email" required />
+      <input type="password" id="adminPassword" placeholder="Password" required />
+      <button type="submit">Login as Admin</button>
+    </form>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" class="section" style="display:none;">
+    <h2>Admin Panel</h2>
+    <button onclick="loadAllPlayers()">View Players</button>
+    <button onclick="loadAllTeams()">View Teams</button>
+    <button onclick="loadAllTournaments()">View Tournaments</button>
+    <div id="adminContent" class="adminContent"></div>
+  </div>
+
+  <!-- Firebase + App Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    // Your Firebase config
+    // 🔹 Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAEKBwriHQs8kPRW0384YTd1Y9vLFcPPqw",
       authDomain: "pef-esports.firebaseapp.com",
@@ -91,81 +111,149 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // Register Player
+    // 🔹 Player Registration
     const playerForm = document.getElementById("playerForm");
-    playerForm.addEventListener("submit", async (e) => {
+    playerForm.addEventListener("submit", async e => {
       e.preventDefault();
       const name = document.getElementById("playerName").value;
       const email = document.getElementById("playerEmail").value;
       const password = document.getElementById("playerPassword").value;
-
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const uid = userCredential.user.uid;
-
-        await addDoc(collection(db, "players"), {
-          uid: uid,
-          name: name,
-          email: email,
-          createdAt: new Date()
-        });
-
-        alert("Player Registered Successfully!");
+        await addDoc(collection(db, "players"), { uid, name, email, approved: false, createdAt: new Date() });
+        alert("Player Registered! Waiting for admin approval.");
         playerForm.reset();
         loadScoreboard();
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
+      } catch(err) { alert("Error: " + err.message); }
     });
 
-    // Create Team
+    // 🔹 Team Creation
     const teamForm = document.getElementById("teamForm");
-    teamForm.addEventListener("submit", async (e) => {
+    teamForm.addEventListener("submit", async e => {
       e.preventDefault();
       const teamName = document.getElementById("teamName").value;
       const members = document.getElementById("teamMembers").value.split(",").map(m => m.trim());
-
       try {
-        await addDoc(collection(db, "teams"), { teamName, members, createdAt: new Date() });
-        alert("Team Created!");
+        await addDoc(collection(db, "teams"), { teamName, members, approved: false, createdAt: new Date() });
+        alert("Team Created! Waiting for admin approval.");
         teamForm.reset();
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
+      } catch(err) { alert("Error: " + err.message); }
     });
 
-    // Tournament Registration
+    // 🔹 Tournament Registration
     const tournamentForm = document.getElementById("tournamentForm");
-    tournamentForm.addEventListener("submit", async (e) => {
+    tournamentForm.addEventListener("submit", async e => {
       e.preventDefault();
       const name = document.getElementById("tournamentName").value;
       const date = document.getElementById("tournamentDate").value;
-
       try {
-        await addDoc(collection(db, "tournaments"), { name, date, createdAt: new Date() });
-        alert("Tournament Registered!");
+        await addDoc(collection(db, "tournaments"), { name, date, approved: false, createdAt: new Date() });
+        alert("Tournament Registered! Waiting for admin approval.");
         tournamentForm.reset();
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
+      } catch(err) { alert("Error: " + err.message); }
     });
 
-    // Load Scoreboard
+    // 🔹 Load Scoreboard (approved only)
     async function loadScoreboard() {
       const tbody = document.getElementById("scoreboardBody");
       tbody.innerHTML = "";
       const querySnapshot = await getDocs(collection(db, "players"));
       querySnapshot.forEach(doc => {
         const data = doc.data();
+        if(!data.approved) return; // skip unapproved
         const tr = document.createElement("tr");
         tr.innerHTML = `<td>${data.name}</td><td>${data.email}</td><td>${data.createdAt.toDate ? data.createdAt.toDate() : data.createdAt}</td>`;
         tbody.appendChild(tr);
       });
     }
-
     loadScoreboard();
 
-  </script>
+    // 🔹 Admin Login
+    const ADMIN_EMAIL = "admin@pfesports.com";
+    const ADMIN_PASSWORD = "Admin123";
+    const adminForm = document.getElementById("adminForm");
+    const adminPanel = document.getElementById("adminPanel");
+    const adminContent = document.getElementById("adminContent");
 
+    adminForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const email = document.getElementById("adminEmail").value;
+      const password = document.getElementById("adminPassword").value;
+      if(email === ADMIN_EMAIL && password === ADMIN_PASSWORD){
+        alert("Admin Logged In!");
+        adminForm.style.display = "none";
+        adminPanel.style.display = "block";
+      } else { alert("Invalid Credentials"); }
+    });
+
+    // 🔹 Admin Functions
+    async function approveDoc(collectionName, docId){
+      const d = doc(db, collectionName, docId);
+      await updateDoc(d, { approved: true });
+      alert("Approved!");
+    }
+
+    async function rejectDoc(collectionName, docId){
+      await deleteDoc(doc(db, collectionName, docId));
+      alert("Rejected & Deleted!");
+    }
+
+    async function deleteDocById(collectionName, docId){
+      if(confirm("Are you sure?")){
+        await deleteDoc(doc(db, collectionName, docId));
+        alert("Deleted!");
+      }
+    }
+
+    async function loadAllPlayers(){
+      adminContent.innerHTML = "<h3>Players</h3>";
+      const snapshot = await getDocs(collection(db, "players"));
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.innerHTML = `
+          ${data.name} | ${data.email} | Approved: ${data.approved}
+          <button onclick="approveDoc('players','${doc.id}'); loadAllPlayers();">Approve</button>
+          <button onclick="rejectDoc('players','${doc.id}'); loadAllPlayers();">Reject</button>
+          <button onclick="deleteDocById('players','${doc.id}'); loadAllPlayers();">Delete</button>
+        `;
+        adminContent.appendChild(div);
+      });
+    }
+
+    async function loadAllTeams(){
+      adminContent.innerHTML = "<h3>Teams</h3>";
+      const snapshot = await getDocs(collection(db, "teams"));
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.innerHTML = `
+          ${data.teamName} | Members: ${data.members.join(", ")} | Approved: ${data.approved}
+          <button onclick="approveDoc('teams','${doc.id}'); loadAllTeams();">Approve</button>
+          <button onclick="rejectDoc('teams','${doc.id}'); loadAllTeams();">Reject</button>
+          <button onclick="deleteDocById('teams','${doc.id}'); loadAllTeams();">Delete</button>
+        `;
+        adminContent.appendChild(div);
+      });
+    }
+
+    async function loadAllTournaments(){
+      adminContent.innerHTML = "<h3>Tournaments</h3>";
+      const snapshot = await getDocs(collection(db, "tournaments"));
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.innerHTML = `
+          ${data.name} | Date: ${data.date} | Approved: ${data.approved}
+          <button onclick="approveDoc('tournaments','${doc.id}'); loadAllTournaments();">Approve</button>
+          <button onclick="rejectDoc('tournaments','${doc.id}'); loadAllTournaments();">Reject</button>
+          <button onclick="deleteDocById('tournaments','${doc.id}'); loadAllTournaments();">Delete</button>
+        `;
+        adminContent.appendChild(div);
+      });
+    }
+
+  </script>
 </body>
 </html>
