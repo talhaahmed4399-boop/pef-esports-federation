@@ -1,0 +1,16 @@
+<div class="section">
+  <h2>Admin Login</h2>
+  <form id="adminForm">
+    <input type="email" id="adminEmail" placeholder="Admin Email" required />
+    <input type="password" id="adminPassword" placeholder="Password" required />
+    <button type="submit">Login as Admin</button>
+  </form>
+</div>
+
+<div id="adminPanel" style="display:none;">
+  <h2>Admin Panel</h2>
+  <button onclick="loadAllPlayers()">View Players</button>
+  <button onclick="loadAllTeams()">View Teams</button>
+  <button onclick="loadAllTournaments()">View Tournaments</button>
+  <div id="adminContent"></div>
+</div>
