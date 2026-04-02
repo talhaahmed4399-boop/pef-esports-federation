@@ -3,91 +3,187 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PEF Esports Dashboard</title>
+<title>PF Esports Admin Dashboard</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin:0;
-        padding:0;
-        background-color:#121212;
-        color:#fff;
-    }
-    header {
-        background:#1f1f1f;
-        padding:15px;
-        text-align:center;
-        font-size:24px;
-        font-weight:bold;
-    }
-    nav {
-        display:flex;
-        justify-content:center;
-        background:#222;
-    }
-    nav button {
-        margin:5px;
-        padding:10px 20px;
-        background:#333;
-        border:none;
-        color:#fff;
-        cursor:pointer;
-    }
-    nav button.active {
-        background:#ff6600;
-    }
-    section {
-        display:none;
-        padding:20px;
-    }
-    section.active {
-        display:block;
-    }
-    input, select {
-        padding:8px;
-        margin:5px 0;
-        width:100%;
-        max-width:400px;
-        background:#222;
-        border:1px solid #444;
-        color:#fff;
-    }
-    button.submit-btn {
-        background:#ff6600;
-        border:none;
-        color:#fff;
-        padding:10px 20px;
-        cursor:pointer;
-        margin-top:10px;
-    }
-    table {
-        width:100%;
-        border-collapse:collapse;
-        margin-top:20px;
-        color:#fff;
-    }
-    table, th, td {
-        border:1px solid #444;
-    }
-    th, td {
-        padding:10px;
-        text-align:left;
-    }
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f2f5; }
+.hidden { display:none; }
+nav { background:#111; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; }
+nav a { color:#fff; margin-left:15px; text-decoration:none; cursor:pointer; }
+nav a:hover { text-decoration:underline; }
+.sidebar { width:240px; background:#222; color:#fff; height:100vh; position:fixed; top:0; left:0; padding-top:60px; display:flex; flex-direction:column; }
+.sidebar button { background:none; border:none; color:#fff; padding:15px; text-align:left; cursor:pointer; width:100%; font-size:15px; }
+.sidebar button:hover { background:#333; }
+.content { margin-left:240px; padding:20px; min-height:100vh; }
+h2 { margin-top:0; }
+input, button { padding:10px; margin:5px 0; width:100%; border-radius:5px; border:1px solid #ccc; }
+button { background:#007bff; color:#fff; border:none; cursor:pointer; }
+button:hover { background:#0056b3; }
+.card { background:#fff; padding:20px; margin-bottom:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
 </style>
 </head>
 <body>
 
-<header>PEF Esports Dashboard</header>
+<!-- Login / Signup -->
+<div id="auth-page" class="container" style="max-width:400px; margin:50px auto;">
+  <h2>PF Esports</h2>
+  <div class="card">
+    <div id="signup-form">
+      <h3>Sign Up</h3>
+      <input type="text" id="signup-name" placeholder="Name" />
+      <input type="text" id="signup-username" placeholder="Username" />
+      <input type="password" id="signup-password" placeholder="Password" />
+      <button onclick="signup()">Sign Up</button>
+      <p>Already have an account? <a href="#" onclick="toggleAuth('login')">Login</a></p>
+    </div>
+    <div id="login-form" class="hidden">
+      <h3>Login</h3>
+      <input type="text" id="login-username" placeholder="Username" />
+      <input type="password" id="login-password" placeholder="Password" />
+      <button onclick="login()">Login</button>
+      <p>Don't have an account? <a href="#" onclick="toggleAuth('signup')">Sign Up</a></p>
+    </div>
+  </div>
+</div>
 
-<nav>
-    <button onclick="showSection('login')" class="active">Login</button>
-    <button onclick="showSection('signup')">Sign Up</button>
-    <button onclick="showSection('playerReg')">Player Registration</button>
-    <button onclick="showSection('createTeam')">Create Team</button>
-    <button onclick="showSection('adminPanel')">Admin Panel</button>
-</nav>
+<!-- Dashboard -->
+<div id="dashboard" class="hidden">
+  <nav>
+    <div>PF Esports</div>
+    <div><a onclick="logout()">Logout</a></div>
+  </nav>
+  <div class="sidebar">
+    <button onclick="showPage('admin')">Admin Panel</button>
+    <button onclick="showPage('create-team')">Create Team</button>
+    <button onclick="showPage('scoreboard')">Scoreboard</button>
+    <button onclick="showPage('tournaments')">Tournaments</button>
+  </div>
+  <div class="content">
 
-<!-- Login -->
-<section id="login" class="active">
-    <h2>Login</h2>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input
+    <!-- Admin Panel -->
+    <div id="admin" class="hidden">
+      <h2>Admin Panel</h2>
+      <div class="card" id="admin-users">Users list will appear here</div>
+      <div class="card" id="admin-teams">Teams list will appear here</div>
+    </div>
+
+    <!-- Create Team -->
+    <div id="create-team" class="hidden">
+      <h2>Create Team</h2>
+      <div class="card">
+        <input type="text" id="team-name" placeholder="Team Name" />
+        <input type="text" id="team-tag" placeholder="Team Tag" />
+        <input type="text" id="player1" placeholder="Player 1" />
+        <input type="text" id="player2" placeholder="Player 2" />
+        <input type="text" id="player3" placeholder="Player 3" />
+        <input type="text" id="player4" placeholder="Player 4" />
+        <input type="text" id="player5" placeholder="Player 5 (Optional)" />
+        <input type="text" id="player6" placeholder="Player 6 (Optional)" />
+        <button onclick="createTeam()">Create Team</button>
+      </div>
+      <div id="team-list" class="card"></div>
+    </div>
+
+    <!-- Scoreboard -->
+    <div id="scoreboard" class="hidden">
+      <h2>Scoreboard</h2>
+      <div class="card">Scoreboard will be updated soon</div>
+    </div>
+
+    <!-- Tournaments -->
+    <div id="tournaments" class="hidden">
+      <h2>Tournaments</h2>
+      <div class="card">Coming Soon</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let users = JSON.parse(localStorage.getItem('users') || '[]');
+let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+function toggleAuth(form){
+  document.getElementById('signup-form').classList.toggle('hidden', form==='login');
+  document.getElementById('login-form').classList.toggle('hidden', form==='signup');
+}
+
+function signup(){
+  const name=document.getElementById('signup-name').value;
+  const username=document.getElementById('signup-username').value;
+  const password=document.getElementById('signup-password').value;
+  if(name && username && password){
+    if(users.find(u=>u.username===username)){ alert('Username already exists'); return; }
+    users.push({name, username, password});
+    localStorage.setItem('users', JSON.stringify(users));
+    alert('Sign Up Successful!');
+    toggleAuth('login');
+  } else { alert('Fill all required fields'); }
+}
+
+function login(){
+  const username=document.getElementById('login-username').value;
+  const password=document.getElementById('login-password').value;
+  const user=users.find(u=>u.username===username && u.password===password);
+  if(user){
+    currentUser=user;
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    document.getElementById('auth-page').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    showPage('admin');
+    updateAdminPanel();
+  } else { alert('Invalid credentials'); }
+}
+
+function logout(){
+  currentUser=null;
+  localStorage.removeItem('currentUser');
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('auth-page').classList.remove('hidden');
+}
+
+function showPage(page){
+  ['admin','create-team','scoreboard','tournaments'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById(page).classList.remove('hidden');
+}
+
+// Admin panel update
+function updateAdminPanel(){
+  const usersDiv=document.getElementById('admin-users');
+  const teamsDiv=document.getElementById('admin-teams');
+  usersDiv.innerHTML='<h3>Users</h3>' + users.map(u=>`<p>${u.username} (${u.name})</p>`).join('');
+  const teams=JSON.parse(localStorage.getItem('teams')||'[]');
+  teamsDiv.innerHTML='<h3>Teams</h3>' + teams.map(t=>`<p>${t.teamName} [${t.teamTag}] - ${t.players.join(', ')}</p>`).join('');
+}
+
+// Create team
+function createTeam(){
+  const teamName=document.getElementById('team-name').value;
+  const teamTag=document.getElementById('team-tag').value;
+  const players=[
+    document.getElementById('player1').value,
+    document.getElementById('player2').value,
+    document.getElementById('player3').value,
+    document.getElementById('player4').value
+  ];
+  const optional=[document.getElementById('player5').value,document.getElementById('player6').value].filter(p=>p);
+  if(teamName && teamTag && players.every(p=>p)){ 
+    const allPlayers=players.concat(optional);
+    const teams=JSON.parse(localStorage.getItem('teams')||'[]');
+    teams.push({teamName, teamTag, players:allPlayers});
+    localStorage.setItem('teams', JSON.stringify(teams));
+    alert('Team Created!');
+    document.getElementById('team-list').innerHTML=allPlayers.map(p=>`<p>${p}</p>`).join('');
+    updateAdminPanel();
+  } else { alert('Fill required fields'); }
+}
+
+// Auto-login if previously logged in
+if(currentUser){
+  document.getElementById('auth-page').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  showPage('admin');
+  updateAdminPanel();
+}
+</script>
+</body>
+</html>
