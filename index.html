@@ -3,236 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PF Esports Dashboard</title>
-
+<title>PF Esports Ultimate Pro</title>
 <style>
-body { font-family: Arial; margin:0; background:#f0f2f5; }
-.hidden { display:none; }
-nav { background:#111; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; }
-.sidebar { width:220px; background:#222; color:#fff; height:100vh; position:fixed; top:0; left:0; padding-top:60px; }
-.sidebar button { width:100%; padding:12px; background:none; border:none; color:#fff; text-align:left; }
-.sidebar button:hover { background:#333; }
-.content { margin-left:240px; padding:20px; }
-.card { background:#fff; padding:20px; margin-bottom:20px; border-radius:8px; }
-input,button { padding:10px; margin:5px 0; width:100%; }
-button { background:#007bff; color:#fff; border:none; }
+body{margin:0;font-family:Arial;background:#0f172a;color:#fff}
+.hidden{display:none}
+nav{background:#020617;padding:15px;display:flex;justify-content:space-between}
+.sidebar{width:240px;background:#020617;height:100vh;position:fixed;top:0;left:0;padding-top:60px}
+.sidebar button{width:100%;padding:12px;background:none;border:none;color:#fff;text-align:left}
+.sidebar button:hover{background:#1e293b}
+.content{margin-left:250px;padding:20px}
+.card{background:#1e293b;padding:15px;margin-bottom:15px;border-radius:10px}
+input,button{padding:10px;margin:5px 0;width:100%}
+button{background:#2563eb;color:#fff;border:none}
+.logo{font-size:22px;font-weight:bold;color:#22c55e}
 </style>
-
 </head>
 <body>
 
 <!-- AUTH -->
 <div id="auth-page" style="max-width:400px;margin:50px auto;">
 <div class="card">
+<h2 class="logo">PF ESPORTS</h2>
 
 <div id="signup-form">
-<h3>Sign Up</h3>
-<input id="signup-name" placeholder="Name">
-<input id="signup-username" placeholder="Username">
-<input id="signup-ign" placeholder="IGN">
-<input id="signup-password" type="password" placeholder="Password">
-<button onclick="signup()">Sign Up</button>
-<p><a href="#" onclick="toggleAuth('login')">Login</a></p>
-<p><a href="#" onclick="toggleAuth('admin')">Admin Login</a></p>
+<input id="su-user" placeholder="Username">
+<input id="su-pass" type="password" placeholder="Password">
+<button onclick="signup()">Signup</button>
+<p onclick="toggle('login')">Login</p>
+<p onclick="toggle('admin')">Admin Login</p>
 </div>
 
 <div id="login-form" class="hidden">
-<h3>Login</h3>
-<input id="login-username" placeholder="Username">
-<input id="login-password" type="password" placeholder="Password">
+<input id="li-user" placeholder="Username">
+<input id="li-pass" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
-<p><a href="#" onclick="toggleAuth('signup')">Sign Up</a></p>
-<p><a href="#" onclick="toggleAuth('admin')">Admin Login</a></p>
+<p onclick="toggle('signup')">Signup</p>
+<p onclick="toggle('admin')">Admin Login</p>
 </div>
 
-<div id="admin-login-form" class="hidden">
-<h3>Admin Login</h3>
-<input id="admin-username" placeholder="Admin Username">
-<input id="admin-password" type="password" placeholder="Admin Password">
+<div id="admin-form" class="hidden">
+<input id="ad-user" placeholder="Admin Username">
+<input id="ad-pass" type="password" placeholder="Password">
 <button onclick="adminLogin()">Login</button>
-<p><a href="#" onclick="toggleAuth('login')">Back</a></p>
 </div>
 
 </div>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="hidden">
-
-<nav>
-<div>PF Esports</div>
-<button onclick="logout()">Logout</button>
-</nav>
-
+<!-- USER DASHBOARD -->
+<div id="dash" class="hidden">
+<nav><div class="logo">PF ESPORTS</div><button onclick="logout()">Logout</button></nav>
 <div class="sidebar">
-<button onclick="showPage('profile')">Profile</button>
-<button onclick="showPage('teams')">Teams</button>
-<button onclick="showPage('create')">Create Team</button>
-<button onclick="showPage('tournaments')">Tournaments</button>
-<button onclick="showPage('scoreboard')">Scoreboard</button>
-<button onclick="showPage('chat')">Chat</button>
-<button onclick="showPage('admin-panel')">Admin Panel</button>
+<button onclick="show('profile')">Profile</button>
+<button onclick="show('teams')">Teams</button>
+<button onclick="show('create')">Create Team</button>
+<button onclick="show('scoreboard')">Scoreboard</button>
+<button onclick="show('leaderboard')">Leaderboard</button>
+<button onclick="show('pubg')">PUBG Tournament</button>
 </div>
-
 <div class="content">
 
-<div id="profile" class="hidden card">
-<h2>Profile</h2>
-<p id="pname"></p>
-</div>
+<div id="profile" class="card hidden"><h3>User Profile</h3><p id="uname"></p></div>
 
-<div id="teams" class="hidden card">
-<h2>Teams</h2>
-<div id="team-list"></div>
-</div>
+<div id="teams" class="card hidden"><h3>Teams</h3><div id="teamList"></div></div>
 
-<div id="create" class="hidden card">
-<h2>Create Team</h2>
+<div id="create" class="card hidden">
+<h3>Create Team</h3>
 <input id="tname" placeholder="Team Name">
+<input id="tag" placeholder="Team Tag">
 <input id="p1" placeholder="Player1">
 <input id="p2" placeholder="Player2">
 <input id="p3" placeholder="Player3">
 <input id="p4" placeholder="Player4">
-<input id="p5" placeholder="Player5 (Optional)">
-<input id="p6" placeholder="Player6 (Optional)">
-<button onclick="createTeam()">Create</button>
+<input id="p5" placeholder="Player5 optional">
+<input id="p6" placeholder="Player6 optional">
+<button onclick="createTeam()">Create Team</button>
 </div>
 
-<div id="tournaments" class="hidden card">
-<h2>Tournaments</h2>
-<div id="tour-list">Coming Soon</div>
+<div id="scoreboard" class="card hidden"><h3>Scoreboard</h3><div id="scores"></div></div>
+<div id="leaderboard" class="card hidden"><h3>Leaderboard</h3><div id="leader"></div></div>
+
+<div id="pubg" class="card hidden">
+<h3>PUBG Tournament</h3>
+<p>Map: Erangel</p>
+<p>Mode: Squad</p>
+<p id="regStatus">Status: Closed</p>
 </div>
 
-<div id="scoreboard" class="hidden card">
-<h2>Scoreboard</h2>
-<div id="score-list"></div>
+</div>
 </div>
 
-<div id="chat" class="hidden card">
-<h2>Chat</h2>
-<div id="chat-box"></div>
-<input id="msg">
-<button onclick="send()">Send</button>
+<!-- ADMIN DASHBOARD -->
+<div id="adminDash" class="hidden">
+<nav><div class="logo">ADMIN PANEL</div><button onclick="logout()">Logout</button></nav>
+<div class="content">
+
+<div class="card">
+<h3>All Teams</h3>
+<div id="adminTeams"></div>
 </div>
 
-<!-- ADMIN PANEL -->
-<div id="admin-panel" class="hidden card">
-<h2>Admin Panel</h2>
-
-<h3>Add Tournament</h3>
-<input id="admin-tour">
-<button onclick="addTour()">Add</button>
-
+<div class="card">
 <h3>Update Score</h3>
-<input id="admin-team">
-<input id="admin-score">
-<button onclick="addScore()">Update</button>
+<input id="ateam" placeholder="Team Name">
+<input id="ascore" placeholder="Score">
+<button onclick="updateScore()">Update Score</button>
+</div>
 
+<div class="card">
+<h3>Tournament Control</h3>
+<button onclick="openReg()">Open Registration</button>
+<button onclick="closeReg()">Close Registration</button>
 </div>
 
 </div>
 </div>
 
 <script>
-let users=[];
-let currentUser=null;
-let isAdmin=false;
+let users=[];let teams=[];let scores=[];
 
-function toggleAuth(type){
-document.getElementById('signup-form').classList.add('hidden');
-document.getElementById('login-form').classList.add('hidden');
-document.getElementById('admin-login-form').classList.add('hidden');
+function toggle(x){document.getElementById('signup-form').classList.add('hidden');document.getElementById('login-form').classList.add('hidden');document.getElementById('admin-form').classList.add('hidden');document.getElementById(x+'-form')?.classList.remove('hidden')}
 
-if(type==='signup') document.getElementById('signup-form').classList.remove('hidden');
-if(type==='login') document.getElementById('login-form').classList.remove('hidden');
-if(type==='admin') document.getElementById('admin-login-form').classList.remove('hidden');
-}
+function signup(){users.push({u:su-user.value,p:su-pass.value});alert('Signup Done')}
 
-function signup(){
-let u=document.getElementById('signup-username').value;
-let p=document.getElementById('signup-password').value;
-if(u && p){
-users.push({u,p});
-alert('Signup done');
-toggleAuth('login');
-}
-}
+function login(){let u=li-user.value,p=li-pass.value;let f=users.find(x=>x.u==u&&x.p==p);if(f){dash.classList.remove('hidden');auth-page.classList.add('hidden');uname.innerText=u}else alert('Wrong Login')}
 
-function login(){
-let u=document.getElementById('login-username').value;
-let p=document.getElementById('login-password').value;
+function adminLogin(){if(ad-user.value==='talha439'&&ad-pass.value==='dalha439'){adminDash.classList.remove('hidden');auth-page.classList.add('hidden')}else alert('Wrong Admin')}
 
-let found=users.find(x=>x.u===u && x.p===p);
+function logout(){location.reload()}
 
-if(found){
-currentUser=found;
-isAdmin=false;
-document.getElementById('auth-page').classList.add('hidden');
-document.getElementById('dashboard').classList.remove('hidden');
-showPage('profile');
-document.getElementById('pname').innerText=u;
-}else{
-alert('Wrong login');
-}
-}
-
-function adminLogin(){
-let u=document.getElementById('admin-username').value;
-let p=document.getElementById('admin-password').value;
-
-if(u==='talha439' && p==='dalha439'){
-isAdmin=true;
-document.getElementById('auth-page').classList.add('hidden');
-document.getElementById('dashboard').classList.remove('hidden');
-showPage('admin-panel');
-}else{
-alert('Wrong admin');
-}
-}
-
-function logout(){
-location.reload();
-}
-
-function showPage(id){
-['profile','teams','create','tournaments','scoreboard','chat','admin-panel']
-.forEach(x=>document.getElementById(x).classList.add('hidden'));
-
-document.getElementById(id).classList.remove('hidden');
-}
+function show(x){['profile','teams','create','scoreboard','leaderboard','pubg'].forEach(i=>document.getElementById(i).classList.add('hidden'));document.getElementById(x).classList.remove('hidden')}
 
 function createTeam(){
-let name=document.getElementById('tname').value;
-let players=[p1.value,p2.value,p3.value,p4.value,p5.value,p6.value].filter(x=>x);
+let name=tname.value;let players=[p1.value,p2.value,p3.value,p4.value,p5.value,p6.value].filter(x=>x);
+if(name&&players.length>=4){teams.push({name,players});
+let d=document.createElement('div');d.innerText=name;
+teamList.appendChild(d);
+adminTeams.appendChild(d.cloneNode(true));}}
 
-if(name && players.length>=4){
-let div=document.createElement('div');
-div.innerText=name + ' - ' + players.join(',');
-document.getElementById('team-list').appendChild(div);
-}
-}
+function updateScore(){
+let t=ateam.value,s=ascore.value;
+let d=document.createElement('div');d.innerText=t+' : '+s;
+scores.push({t,s});
+scores.sort((a,b)=>b.s-a.s);
 
-function send(){
-let m=document.getElementById('msg').value;
-let d=document.createElement('div');
-d.innerText=m;
-document.getElementById('chat-box').appendChild(d);
-}
+scoresDiv.innerHTML='';leader.innerHTML='';
 
-function addTour(){
-let t=document.getElementById('admin-tour').value;
-let d=document.createElement('div');
-d.innerText=t;
-document.getElementById('tour-list').appendChild(d);
-}
+scores.forEach(x=>{
+let el=document.createElement('div');el.innerText=x.t+' : '+x.s;
+scores.appendChild(el);
+leader.appendChild(el.cloneNode(true));});}
 
-function addScore(){
-let t=document.getElementById('admin-team').value;
-let s=document.getElementById('admin-score').value;
-let d=document.createElement('div');
-d.innerText=t + ' : ' + s;
-document.getElementById('score-list').appendChild(d);
-}
+function openReg(){document.getElementById('regStatus').innerText='Status: Open'}
+function closeReg(){document.getElementById('regStatus').innerText='Status: Closed'}
 </script>
 
 </body>
