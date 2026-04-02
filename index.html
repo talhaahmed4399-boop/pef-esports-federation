@@ -4,68 +4,52 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PF Esports Dashboard</title>
-
 <style>
 body { font-family: Arial; margin:0; background:#f0f2f5; }
 .hidden { display:none; }
-
 nav { background:#111; color:#fff; padding:10px; display:flex; justify-content:space-between; }
-
-.sidebar {
-  width:220px; background:#222; color:#fff;
-  height:100vh; position:fixed; padding-top:60px;
-}
-.sidebar button {
-  background:none; border:none; color:#fff;
-  padding:15px; width:100%; text-align:left;
-}
+.sidebar { width:220px; background:#222; color:#fff; height:100vh; position:fixed; padding-top:60px; }
+.sidebar button { background:none; border:none; color:#fff; padding:15px; width:100%; text-align:left; }
 .sidebar button:hover { background:#333; }
-
 .content { margin-left:240px; padding:20px; }
-
-.card {
-  background:#fff; padding:20px;
-  border-radius:8px; margin-bottom:20px;
-}
-
-input, button {
-  padding:10px; margin:5px 0; width:100%;
-}
-
-button { background:#007bff; color:#fff; border:none; }
+.card { background:#fff; padding:20px; border-radius:8px; margin-bottom:20px; }
+input, button { padding:10px; margin:5px 0; width:100%; }
+button { background:#007bff; color:#fff; border:none; cursor:pointer; }
+button:hover { background:#0056b3; }
 </style>
 </head>
-
 <body>
 
 <!-- AUTH -->
 <div id="auth-page" style="max-width:400px;margin:50px auto;">
 <h2>PF Esports</h2>
-
 <div class="card">
+<!-- Signup -->
 <div id="signup-form">
 <h3>Sign Up</h3>
 <input id="signup-name" placeholder="Name">
 <input id="signup-username" placeholder="Username">
-<input id="signup-team" placeholder="Team">
-<input id="signup-ign" placeholder="IGN">
+<input id="signup-team" placeholder="Team (Optional)">
+<input id="signup-ign" placeholder="In-game Name">
 <input id="signup-password" type="password" placeholder="Password">
 <button onclick="signup()">Sign Up</button>
-<p><a onclick="toggleAuth('login')">Login</a> | 
-<a onclick="toggleAuth('admin')">Admin</a></p>
+<p>Already have account? <a onclick="toggleAuth('login')">Login</a> | <a onclick="toggleAuth('admin')">Admin</a></p>
 </div>
 
+<!-- User Login -->
 <div id="login-form" class="hidden">
 <h3>Login</h3>
-<input id="login-username">
-<input id="login-password" type="password">
+<input id="login-username" placeholder="Username">
+<input id="login-password" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
+<p>Don't have account? <a onclick="toggleAuth('signup')">Sign Up</a></p>
 </div>
 
+<!-- Admin Login -->
 <div id="admin-login-form" class="hidden">
 <h3>Admin Login</h3>
-<input id="admin-username">
-<input id="admin-password" type="password">
+<input id="admin-username" placeholder="Admin Username">
+<input id="admin-password" type="password" placeholder="Admin Password">
 <button onclick="adminLogin()">Login</button>
 </div>
 </div>
@@ -73,7 +57,6 @@ button { background:#007bff; color:#fff; border:none; }
 
 <!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
-
 <nav>
 <div>PF Esports</div>
 <button onclick="logout()">Logout</button>
@@ -88,46 +71,53 @@ button { background:#007bff; color:#fff; border:none; }
 </div>
 
 <div class="content">
-
+<!-- Profile -->
 <div id="profile" class="hidden">
 <div class="card">
-<p>Name: <span id="pname"></span></p>
-<p>User: <span id="puser"></span></p>
+<p>Name: <span id="profile-name"></span></p>
+<p>Username: <span id="profile-username"></span></p>
+<p>Team: <span id="profile-team"></span></p>
+<p>In-game Name: <span id="profile-ign"></span></p>
 </div>
 </div>
 
+<!-- Teams -->
 <div id="teams" class="hidden">
 <div class="card" id="team-list"></div>
 </div>
 
+<!-- Create Team -->
 <div id="create-team" class="hidden">
 <div class="card">
-<input id="tname" placeholder="Team Name">
-<input id="p1" placeholder="Player1">
-<input id="p2">
-<input id="p3">
-<input id="p4">
-<button onclick="createTeam()">Create</button>
+<input id="team-name" placeholder="Team Name">
+<input id="player1" placeholder="Player 1">
+<input id="player2" placeholder="Player 2">
+<input id="player3" placeholder="Player 3">
+<input id="player4" placeholder="Player 4">
+<input id="player5" placeholder="Player 5 (Optional)">
+<input id="player6" placeholder="Player 6 (Optional)">
+<button onclick="createTeam()">Create Team</button>
 </div>
 </div>
 
+<!-- Scoreboard -->
 <div id="scoreboard" class="hidden">
-<div class="card" id="scores"></div>
+<div class="card" id="score-list"></div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- Admin Panel -->
 <div id="admin-panel" class="hidden">
 <div class="card">
-<h3>Registration</h3>
+<h3>Registration Control</h3>
 <p>Status: <span id="reg-status"></span></p>
-<button onclick="toggleReg()">Toggle</button>
+<button onclick="toggleRegistration()">Toggle Open/Close</button>
 </div>
 
 <div class="card">
-<h3>Update Score</h3>
-<input id="score-team" placeholder="Team">
-<input id="score-value" type="number">
-<button onclick="updateScore()">Update</button>
+<h3>Update Team Score</h3>
+<input id="admin-team-name" placeholder="Team Name">
+<input id="admin-team-score" type="number" placeholder="Score">
+<button onclick="updateTeamScore()">Update</button>
 </div>
 </div>
 
@@ -135,132 +125,115 @@ button { background:#007bff; color:#fff; border:none; }
 </div>
 
 <script>
-
 let users = JSON.parse(localStorage.getItem("users")) || [];
 let teams = JSON.parse(localStorage.getItem("teams")) || [];
-let regOpen = JSON.parse(localStorage.getItem("regOpen")) ?? true;
-
+let registrationOpen = JSON.parse(localStorage.getItem("regOpen")) ?? true;
 let currentUser = null;
 let isAdmin = false;
 
-function save(){
+function saveAll(){
 localStorage.setItem("users", JSON.stringify(users));
 localStorage.setItem("teams", JSON.stringify(teams));
-localStorage.setItem("regOpen", JSON.stringify(regOpen));
+localStorage.setItem("regOpen", JSON.stringify(registrationOpen));
 }
 
-function toggleAuth(x){
-signup-form.classList.add("hidden");
-login-form.classList.add("hidden");
-admin-login-form.classList.add("hidden");
-
-if(x=="login") login-form.classList.remove("hidden");
-if(x=="admin") admin-login-form.classList.remove("hidden");
+function toggleAuth(form){
+signup-form.classList.add('hidden');
+login-form.classList.add('hidden');
+admin-login-form.classList.add('hidden');
+if(form==='signup') signup-form.classList.remove('hidden');
+if(form==='login') login-form.classList.remove('hidden');
+if(form==='admin') admin-login-form.classList.remove('hidden');
 }
 
 function signup(){
-if(!regOpen){ alert("Registration Closed"); return; }
-
-let u = {
-name: signup-name.value,
-username: signup-username.value,
-team: signup-team.value,
-ign: signup-ign.value,
-password: signup-password.value
-};
-
-users.push(u);
-save();
-alert("Done");
+if(!registrationOpen){ alert("Registration Closed"); return; }
+const name = signup-name.value;
+const username = signup-username.value;
+const team = signup-team.value;
+const ign = signup-ign.value;
+const password = signup-password.value;
+if(!name || !username || !ign || !password){ alert("Fill required fields"); return; }
+if(users.find(u=>u.username===username)){ alert("Username exists"); return; }
+users.push({name, username, team, ign, password});
+saveAll();
+alert("Sign Up Successful"); toggleAuth('login');
 }
 
 function login(){
-let u = users.find(x=>x.username==login-username.value && x.password==login-password.value);
-
-if(u){
-currentUser = u;
-dashboard.classList.remove("hidden");
-auth-page.classList.add("hidden");
-showPage("profile");
-
-pname.innerText=u.name;
-puser.innerText=u.username;
-}
+const username = login-username.value;
+const password = login-password.value;
+const user = users.find(u=>u.username===username && u.password===password);
+if(user){ 
+currentUser = user; isAdmin=false;
+auth-page.classList.add('hidden'); dashboard.classList.remove('hidden');
+showPage('profile'); updateProfile();
+}else{ alert("Invalid credentials"); }
 }
 
 function adminLogin(){
-if(admin-username.value=="TALHA439" && admin-password.value=="TALHA439"){
-isAdmin=true;
-dashboard.classList.remove("hidden");
-auth-page.classList.add("hidden");
+const username = admin-username.value;
+const password = admin-password.value;
+if(username==="TALHA439" && password==="TALHA439"){
+isAdmin=true; currentUser=null;
+auth-page.classList.add('hidden'); dashboard.classList.remove('hidden');
 document.querySelector(".sidebar").style.display="none";
-showPage("admin-panel");
-}
+showPage('admin-panel');
+}else alert("Invalid Admin credentials");
 }
 
 function logout(){ location.reload(); }
 
-function showPage(p){
-["profile","teams","create-team","scoreboard","admin-panel"].forEach(x=>{
-document.getElementById(x).classList.add("hidden");
-});
-document.getElementById(p).classList.remove("hidden");
+function showPage(pageId){
+['profile','teams','create-team','scoreboard','admin-panel'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+document.getElementById(pageId).classList.remove('hidden');
+renderTeams(); renderScoreboard();
+}
 
-renderTeams();
-renderScores();
+function updateProfile(){
+if(!currentUser) return;
+profile-name.innerText = currentUser.name;
+profile-username.innerText = currentUser.username;
+profile-team.innerText = currentUser.team || 'Not Assigned';
+profile-ign.innerText = currentUser.ign;
 }
 
 function createTeam(){
-let t = {
-name: tname.value,
-players: [p1.value,p2.value,p3.value,p4.value],
-score:0
-};
-teams.push(t);
-save();
-alert("Team Added");
+const name = team-name.value;
+const players = [player1.value,player2.value,player3.value,player4.value,player5.value,player6.value].filter(p=>p);
+if(!name || players.length<4){ alert("Team Name + min 4 players required"); return; }
+teams.push({name, players, score:0});
+saveAll(); alert("Team Created"); renderTeams();
 }
 
 function renderTeams(){
-team-list.innerHTML="";
+const list = team-list; list.innerHTML="";
 teams.forEach(t=>{
-let d=document.createElement("div");
-d.innerText=t.name+" ("+t.players.join(",")+") Score:"+t.score;
-team-list.appendChild(d);
+const d=document.createElement('div'); d.className='card';
+d.innerText = t.name+" - "+t.players.join(', ')+" | Score: "+t.score;
+list.appendChild(d);
 });
 }
 
-function updateScore(){
-let t = teams.find(x=>x.name==score-team.value);
-if(t){
-t.score=parseInt(score-value.value);
-save();
-alert("Updated");
-}
-}
-
-function renderScores(){
-scores.innerHTML="";
+function renderScoreboard(){
+const box = score-list; box.innerHTML="";
 [...teams].sort((a,b)=>b.score-a.score).forEach((t,i)=>{
-let d=document.createElement("div");
-d.innerText=(i+1)+". "+t.name+" - "+t.score;
-scores.appendChild(d);
+const d=document.createElement('div'); d.innerText=(i+1)+". "+t.name+" - "+t.score; box.appendChild(d);
 });
 }
 
-function toggleReg(){
-regOpen=!regOpen;
-save();
-updateReg();
+function updateTeamScore(){
+const name = admin-team-name.value;
+const score = parseInt(admin-team-score.value);
+const t = teams.find(x=>x.name===name);
+if(t){ t.score = score; saveAll(); alert("Score Updated"); renderScoreboard(); } 
+else alert("Team not found");
 }
 
-function updateReg(){
-reg-status.innerText = regOpen ? "OPEN" : "CLOSED";
-}
-
-window.onload=updateReg;
+function toggleRegistration(){ registrationOpen = !registrationOpen; saveAll(); updateRegStatus(); }
+function updateRegStatus(){ reg-status.innerText = registrationOpen?"OPEN ✅":"CLOSED ❌"; }
+window.onload=updateRegStatus;
 
 </script>
-
 </body>
 </html>
