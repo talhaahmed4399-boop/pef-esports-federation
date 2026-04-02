@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PF Esports Dashboard V4</title>
+<title>PF Esports Dashboard</title>
 <style>
 body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f2f5; }
 .hidden { display: none; }
 nav { background:#111; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; }
 nav a { color:#fff; margin-left:15px; text-decoration:none; cursor:pointer; }
 nav a:hover { text-decoration:underline; }
-.sidebar { width:240px; background:#222; color:#fff; height:100vh; position:fixed; top:0; left:0; padding-top:60px; display:flex; flex-direction:column; }
+.sidebar { width:220px; background:#222; color:#fff; height:100vh; position:fixed; top:0; left:0; padding-top:60px; display:flex; flex-direction:column; }
 .sidebar button { background:none; border:none; color:#fff; padding:15px; text-align:left; cursor:pointer; width:100%; font-size:15px; }
 .sidebar button:hover { background:#333; }
-.content { margin-left:260px; padding:20px; min-height:100vh; }
+.content { margin-left:240px; padding:20px; min-height:100vh; }
 h2 { margin-top:0; }
 input, button, textarea, select { padding:10px; margin:5px 0; width:100%; border-radius:5px; border:1px solid #ccc; }
 button { background:#007bff; color:#fff; border:none; cursor:pointer; }
@@ -26,17 +26,7 @@ button:hover { background:#0056b3; }
 </head>
 <body>
 
-<!-- ===== Admin Login ===== -->
-<div id="admin-login-page" class="container" style="max-width:400px; margin:50px auto;">
-  <h2>Admin Panel Login</h2>
-  <div class="card">
-    <input type="text" id="admin-username" placeholder="Username" />
-    <input type="password" id="admin-password" placeholder="Password" />
-    <button onclick="adminLogin()">Login</button>
-  </div>
-</div>
-
-<!-- ===== User Login/Signup Page ===== -->
+<!-- ===== User Login / Signup ===== -->
 <div id="auth-page" class="container" style="max-width:400px; margin:50px auto;">
   <h2>PF Esports</h2>
   <div class="card">
@@ -61,40 +51,13 @@ button:hover { background:#0056b3; }
   </div>
 </div>
 
-<!-- ===== Admin Dashboard ===== -->
-<div id="admin-dashboard" class="hidden">
-  <nav>
-    <div>PF Esports - Admin</div>
-    <div><a onclick="logoutAdmin()">Logout</a></div>
-  </nav>
-  <div class="sidebar">
-    <button onclick="showAdminPage('manage-tournaments')">Manage Tournaments</button>
-    <button onclick="showAdminPage('update-scores')">Update Team Scores</button>
-    <button onclick="showAdminPage('manage-users')">Manage Users</button>
-  </div>
-  <div class="content">
-    <div id="manage-tournaments" class="hidden">
-      <h2>Manage Tournaments</h2>
-      <div class="card">
-        <input type="text" id="new-tournament-name" placeholder="Tournament Name" />
-        <button onclick="addTournament()">Add Tournament</button>
-      </div>
-      <div id="tournament-list" class="card"></div>
-    </div>
-
-    <div id="update-scores" class="hidden">
-      <h2>Update Team Scores</h2>
-      <div class="card">
-        <input type="text" id="team-name-update" placeholder="Team Name" />
-        <input type="number" id="team-score-update" placeholder="New Score" />
-        <button onclick="updateTeamScore()">Update Score</button>
-      </div>
-    </div>
-
-    <div id="manage-users" class="hidden">
-      <h2>Registered Users</h2>
-      <div id="user-list" class="card"></div>
-    </div>
+<!-- ===== Admin Login ===== -->
+<div id="admin-login-page" class="hidden" style="max-width:400px; margin:50px auto;">
+  <h2>Admin Panel Login</h2>
+  <div class="card">
+    <input type="text" id="admin-username" placeholder="Username" />
+    <input type="password" id="admin-password" placeholder="Password" />
+    <button onclick="adminLogin()">Login</button>
   </div>
 </div>
 
@@ -102,8 +65,11 @@ button:hover { background:#0056b3; }
 <div id="dashboard" class="hidden">
   <nav>
     <div>PF Esports</div>
-    <div><a onclick="logout()">Logout</a></div>
+    <div>
+      <a onclick="logout()">Logout</a>
+    </div>
   </nav>
+
   <div class="sidebar">
     <button onclick="showPage('profile')">Profile</button>
     <button onclick="showPage('player-stats')">Player Stats</button>
@@ -116,28 +82,107 @@ button:hover { background:#0056b3; }
     <button onclick="showPage('gallery')">Gallery</button>
     <button onclick="showPage('notifications')">Notifications</button>
   </div>
-  <div class="content" id="user-content"></div>
+
+  <div class="content">
+    <!-- Profile -->
+    <div id="profile" class="hidden">
+      <h2>My Profile</h2>
+      <div class="card">
+        <p>Name: <span id="profile-name"></span></p>
+        <p>Username: <span id="profile-username"></span></p>
+        <p>Team: <span id="profile-team"></span></p>
+        <p>In-game Name: <span id="profile-ign"></span></p>
+      </div>
+    </div>
+
+    <!-- Player Stats -->
+    <div id="player-stats" class="hidden">
+      <h2>Player Stats</h2>
+      <div class="card">
+        <p>Matches Played: 0</p>
+        <p>Kills: 0</p>
+        <p>Score: 0</p>
+      </div>
+    </div>
+
+    <!-- Teams -->
+    <div id="teams" class="hidden">
+      <h2>Teams</h2>
+      <div id="team-list" class="card"></div>
+    </div>
+
+    <!-- Create Team -->
+    <div id="create-team" class="hidden">
+      <h2>Create Team</h2>
+      <div class="card">
+        <input type="text" id="new-team-name" placeholder="Team Name" />
+        <input type="text" id="new-team-tag" placeholder="Team Tag" />
+        <input type="text" id="player-1" placeholder="Player 1" />
+        <input type="text" id="player-2" placeholder="Player 2" />
+        <input type="text" id="player-3" placeholder="Player 3" />
+        <input type="text" id="player-4" placeholder="Player 4" />
+        <input type="text" id="player-5" placeholder="Player 5 (Optional)" />
+        <input type="text" id="player-6" placeholder="Player 6 (Optional)" />
+        <button onclick="createTeam()">Create Team</button>
+      </div>
+    </div>
+
+    <!-- Tournaments -->
+    <div id="tournaments" class="hidden">
+      <h2>Tournaments</h2>
+      <div class="card" id="tournament-list">Coming Soon</div>
+    </div>
+
+    <!-- Scoreboard -->
+    <div id="scoreboard" class="hidden">
+      <h2>Scoreboard</h2>
+      <div class="card" id="scoreboard-list">Scores will appear here (admin updates manually)</div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="leaderboard" class="hidden">
+      <h2>Leaderboard</h2>
+      <div class="card" id="leaderboard-list">Top players will appear here</div>
+    </div>
+
+    <!-- Chat -->
+    <div id="chat" class="hidden">
+      <h2>Chat</h2>
+      <div class="card chat-box" id="chat-box"></div>
+      <input type="text" id="chat-input" placeholder="Type a message" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <!-- Gallery -->
+    <div id="gallery" class="hidden">
+      <h2>Gallery</h2>
+      <div class="card gallery">
+        <img src="https://via.placeholder.com/150" alt="Game Image">
+        <img src="https://via.placeholder.com/150" alt="Game Image">
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div id="notifications" class="hidden">
+      <h2>Notifications</h2>
+      <div class="card">
+        <p>[10:00] Tournament updates will appear here</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-// Admin credentials
-const adminCredentials = { username: 'talha439', password: 'dalha439' };
 let users = [];
-let tournaments = [];
-let teams = [];
 let currentUser = null;
-let currentAdmin = null;
 
+// Toggle User Auth Forms
 function toggleAuth(form){
-  if(form==='signup'){
-    document.getElementById('signup-form').classList.remove('hidden');
-    document.getElementById('login-form').classList.add('hidden');
-  } else {
-    document.getElementById('signup-form').classList.add('hidden');
-    document.getElementById('login-form').classList.remove('hidden');
-  }
+  document.getElementById('signup-form').classList.toggle('hidden', form==='login');
+  document.getElementById('login-form').classList.toggle('hidden', form==='signup');
 }
 
+// User Signup
 function signup(){
   const name = document.getElementById('signup-name').value;
   const username = document.getElementById('signup-username').value;
@@ -147,11 +192,12 @@ function signup(){
   if(name && username && ign && password){
     if(users.find(u=>u.username===username)){ alert('Username already exists'); return; }
     users.push({name, username, team, ign, password});
-    alert('Sign Up Successful! You can login now.');
+    alert('Sign Up Successful! Login now.');
     toggleAuth('login');
-  } else { alert('Fill all required fields'); }
+  } else alert('Fill all required fields');
 }
 
+// User Login
 function login(){
   const username = document.getElementById('login-username').value;
   const password = document.getElementById('login-password').value;
@@ -161,7 +207,8 @@ function login(){
     document.getElementById('auth-page').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
     showPage('profile');
-  } else { alert('Invalid credentials'); }
+    updateProfile();
+  } else alert('Invalid credentials');
 }
 
 function logout(){
@@ -170,50 +217,64 @@ function logout(){
   document.getElementById('auth-page').classList.remove('hidden');
 }
 
-function adminLogin(){
-  const username = document.getElementById('admin-username').value;
-  const password = document.getElementById('admin-password').value;
-  if(username === adminCredentials.username && password === adminCredentials.password){
-    currentAdmin = true;
-    document.getElementById('admin-login-page').classList.add('hidden');
-    document.getElementById('admin-dashboard').classList.remove('hidden');
-  } else { alert('Invalid Admin Credentials'); }
-}
-
-function logoutAdmin(){
-  currentAdmin = null;
-  document.getElementById('admin-dashboard').classList.add('hidden');
-  document.getElementById('admin-login-page').classList.remove('hidden');
-}
-
-function showAdminPage(page){
-  ['manage-tournaments','update-scores','manage-users'].forEach(id => document.getElementById(id).classList.add('hidden'));
-  document.getElementById(page).classList.remove('hidden');
-}
-
+// Show Pages
 function showPage(pageId){
-  const pages = ['profile','player-stats','teams','create-team','tournaments','scoreboard','leaderboard','chat','gallery','notifications'];
-  pages.forEach(id => document.getElementById(id).classList.add('hidden'));
+  ['profile','player-stats','teams','create-team','tournaments','scoreboard','leaderboard','chat','gallery','notifications']
+    .forEach(id=>document.getElementById(id).classList.add('hidden'));
   document.getElementById(pageId).classList.remove('hidden');
 }
 
-function addTournament(){
-  const name = document.getElementById('new-tournament-name').value;
-  if(name){ tournaments.push({name});
-    const div = document.createElement('div'); div.innerText = name;
-    document.getElementById('tournament-list').appendChild(div);
-    alert('Tournament Added!');
+// Update Profile
+function updateProfile(){
+  if(currentUser){
+    document.getElementById('profile-name').innerText=currentUser.name;
+    document.getElementById('profile-username').innerText=currentUser.username;
+    document.getElementById('profile-team').innerText=currentUser.team||'Not Assigned';
+    document.getElementById('profile-ign').innerText=currentUser.ign;
   }
 }
 
-function updateTeamScore(){
-  const team = document.getElementById('team-name-update').value;
-  const score = parseInt(document.getElementById('team-score-update').value);
-  if(team && !isNaN(score)){
-    const existing = teams.find(t=>t.name===team);
-    if(existing){ existing.score = score; alert('Score Updated'); }
-    else { teams.push({name:team,score}); alert('Team Added with Score'); }
+// Chat
+function sendMessage(){
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if(msg){
+    const chatBox = document.getElementById('chat-box');
+    const p = document.createElement('div');
+    p.classList.add('chat-message');
+    p.innerText = currentUser.username+": "+msg;
+    chatBox.appendChild(p);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    input.value='';
   }
+}
+
+// Create Team
+function createTeam(){
+  const teamName = document.getElementById('new-team-name').value;
+  const teamTag = document.getElementById('new-team-tag').value;
+  const players = [];
+  for(let i=1;i<=6;i++){ 
+    const p = document.getElementById('player-'+i).value; 
+    if(p) players.push(p);
+  }
+  if(teamName && teamTag && players.length>=4){
+    const div = document.createElement('div');
+    div.classList.add('card');
+    div.innerHTML = `<strong>${teamName}</strong> [${teamTag}] - Players: ${players.join(', ')}`;
+    document.getElementById('team-list').appendChild(div);
+    alert('Team Created!');
+  } else alert('Fill Team Name, Tag and minimum 4 players');
+}
+
+// Admin Login
+function adminLogin(){
+  const username = document.getElementById('admin-username').value;
+  const password = document.getElementById('admin-password').value;
+  if(username==='talha439' && password==='dalha439'){
+    alert('Admin logged in');
+    // Here admin panel page can be displayed (implement as separate section)
+  } else alert('Invalid Admin credentials');
 }
 </script>
 
