@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PF Esports Dashboard V3</title>
+<title>PF Esports Dashboard V4</title>
 <style>
 body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f2f5; }
 .hidden { display: none; }
@@ -116,24 +116,60 @@ button:hover { background:#0056b3; }
     <button onclick="showPage('gallery')">Gallery</button>
     <button onclick="showPage('notifications')">Notifications</button>
   </div>
-  <div class="content">
-    <!-- Sections like profile, create team, scoreboard, leaderboard, etc. similar to previous version -->
-  </div>
+  <div class="content" id="user-content"></div>
 </div>
 
 <script>
 // Admin credentials
 const adminCredentials = { username: 'talha439', password: 'dalha439' };
-
-// Sample data
 let users = [];
 let tournaments = [];
 let teams = [];
-
 let currentUser = null;
 let currentAdmin = null;
 
-// ===== Admin Login =====
+function toggleAuth(form){
+  if(form==='signup'){
+    document.getElementById('signup-form').classList.remove('hidden');
+    document.getElementById('login-form').classList.add('hidden');
+  } else {
+    document.getElementById('signup-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+  }
+}
+
+function signup(){
+  const name = document.getElementById('signup-name').value;
+  const username = document.getElementById('signup-username').value;
+  const team = document.getElementById('signup-team').value;
+  const ign = document.getElementById('signup-ign').value;
+  const password = document.getElementById('signup-password').value;
+  if(name && username && ign && password){
+    if(users.find(u=>u.username===username)){ alert('Username already exists'); return; }
+    users.push({name, username, team, ign, password});
+    alert('Sign Up Successful! You can login now.');
+    toggleAuth('login');
+  } else { alert('Fill all required fields'); }
+}
+
+function login(){
+  const username = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
+  const user = users.find(u=>u.username===username && u.password===password);
+  if(user){
+    currentUser = user;
+    document.getElementById('auth-page').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    showPage('profile');
+  } else { alert('Invalid credentials'); }
+}
+
+function logout(){
+  currentUser = null;
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('auth-page').classList.remove('hidden');
+}
+
 function adminLogin(){
   const username = document.getElementById('admin-username').value;
   const password = document.getElementById('admin-password').value;
@@ -143,25 +179,33 @@ function adminLogin(){
     document.getElementById('admin-dashboard').classList.remove('hidden');
   } else { alert('Invalid Admin Credentials'); }
 }
+
 function logoutAdmin(){
   currentAdmin = null;
   document.getElementById('admin-dashboard').classList.add('hidden');
   document.getElementById('admin-login-page').classList.remove('hidden');
 }
+
 function showAdminPage(page){
   ['manage-tournaments','update-scores','manage-users'].forEach(id => document.getElementById(id).classList.add('hidden'));
   document.getElementById(page).classList.remove('hidden');
 }
+
+function showPage(pageId){
+  const pages = ['profile','player-stats','teams','create-team','tournaments','scoreboard','leaderboard','chat','gallery','notifications'];
+  pages.forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById(pageId).classList.remove('hidden');
+}
+
 function addTournament(){
   const name = document.getElementById('new-tournament-name').value;
-  if(name){
-    tournaments.push({name});
-    const div = document.createElement('div');
-    div.innerText = name;
+  if(name){ tournaments.push({name});
+    const div = document.createElement('div'); div.innerText = name;
     document.getElementById('tournament-list').appendChild(div);
     alert('Tournament Added!');
   }
 }
+
 function updateTeamScore(){
   const team = document.getElementById('team-name-update').value;
   const score = parseInt(document.getElementById('team-score-update').value);
@@ -172,5 +216,6 @@ function updateTeamScore(){
   }
 }
 </script>
+
 </body>
 </html>
