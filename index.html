@@ -2,20 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>PF Esports PRO - Ultimate Tournament System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PF Esports PRO</title>
 
-<!-- Firebase Compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <style>
-body{font-family:Arial;background:#0f172a;color:white;margin:0;padding:0}
-.card{background:#1e293b;padding:20px;border-radius:10px;margin:10px}
-input,button{padding:10px;margin:5px;width:100%;border-radius:5px;border:none}
-button{background:#3b82f6;color:white;cursor:pointer}
+body{margin:0;background:#0b0f1a;color:#fff;font-family:Arial}
+.card{background:#121a2a;margin:10px;padding:15px;border-radius:10px;border:1px solid #1f2a44}
+input,button{width:100%;padding:10px;margin-top:5px;border-radius:6px;border:none}
+button{background:#00f7ff;color:#000;font-weight:bold;cursor:pointer}
 .hidden{display:none}
+.admin{background:#2a0f0f;border:1px solid red}
+.glow{text-shadow:0 0 10px #00f7ff}
+
+/* tournament styles */
+.stage{background:#0f172a;padding:10px;margin:5px;border-left:4px solid #00f7ff}
+.rank{color:#00ff99}
+.badge{color:#ffcc00}
 </style>
 </head>
 
@@ -24,7 +30,7 @@ button{background:#3b82f6;color:white;cursor:pointer}
 <!-- AUTH -->
 <div id="auth">
   <div class="card">
-    <h2>PF Esports PRO</h2>
+    <h2 class="glow">PF ESPORTS PRO</h2>
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Password">
     <button onclick="signup()">Signup</button>
@@ -41,115 +47,235 @@ button{background:#3b82f6;color:white;cursor:pointer}
     <button onclick="logout()">Logout</button>
   </div>
 
+  <!-- PLAY STAGE SYSTEM -->
   <div class="card">
-    <h3>Create Team</h3>
-    <input id="teamName" placeholder="Team Name">
-    <button onclick="createTeam()">Create</button>
+    <h3>🎯 Play Stage System</h3>
+    <div id="stages"></div>
   </div>
 
+  <!-- PLAYER REG -->
   <div class="card">
-    <h3>Teams</h3>
-    <div id="teams"></div>
+    <h3>Player Registration</h3>
+    <input id="playerName" placeholder="Player Name">
+    <input id="playerIGN" placeholder="IGN">
+    <input id="playerTeam" placeholder="Team">
+    <button onclick="registerPlayer()">Register</button>
   </div>
 
+  <!-- PLAYERS -->
   <div class="card">
-    <h3>Scoreboard</h3>
-    <div id="score"></div>
+    <h3>Players</h3>
+    <div id="players"></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="card admin" id="adminPanel" style="display:none">
+
+    <h3>🔥 Admin Match Control + Ranking</h3>
+
+    <input id="teamA" placeholder="Team A">
+    <input id="teamB" placeholder="Team B">
+
+    <input id="killsA" placeholder="Kills A">
+    <input id="killsB" placeholder="Kills B">
+
+    <input id="stage" placeholder="Stage (Qualifiers/Semi/Final)">
+
+    <button onclick="updateMatch()">Update Match</button>
+    <button onclick="finishMatch()">Finish Match</button>
+
+  </div>
+
+  <!-- LIVE MATCH -->
+  <div class="card">
+    <h3>Live Match</h3>
+    <div id="live"></div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="card">
+    <h3>🏆 Leaderboard (Trending)</h3>
+    <div id="leaderboard"></div>
+  </div>
+
+  <!-- KNOCKOUT -->
+  <div class="card">
+    <h3>⚔ Knockout Tournament</h3>
+    <div id="knockout"></div>
   </div>
 
 </div>
 
 <script>
 
-// 🔥 FIREBASE CONFIG (YOUR ORIGINAL)
+// FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyAowtYIS_HuN6MOYDC7cv_Rtb_jylm1A1Y",
   authDomain: "pef-esports-federation.firebaseapp.com",
   projectId: "pef-esports-federation",
   storageBucket: "pef-esports-federation.appspot.com",
   messagingSenderId: "990873596300",
-  appId: "1:990873596300:web:97b6cea53b651e44d3e6a9",
-  measurementId: "G-7FMN84766W"
+  appId: "1:990873596300:web:97b6cea53b651e44d3e6a9"
 };
 
-// INIT
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+const ADMIN = "admin@pfesports.com";
 
-// 🔥 SIGNUP
+// AUTH
 function signup(){
-auth.createUserWithEmailAndPassword(email.value, password.value)
-.then(()=>alert("Signup Success"))
-.catch(err=>alert(err.message));
+auth.createUserWithEmailAndPassword(email.value,password.value)
+.catch(e=>alert(e.message));
 }
 
-// 🔥 LOGIN
 function login(){
-auth.signInWithEmailAndPassword(email.value, password.value)
-.catch(err=>alert(err.message));
+auth.signInWithEmailAndPassword(email.value,password.value)
+.catch(e=>alert(e.message));
 }
 
-// 🔥 LOGOUT
-function logout(){
-auth.signOut();
-}
+function logout(){auth.signOut();}
 
-// 🔥 AUTH STATE
+// STATE
 auth.onAuthStateChanged(user=>{
 if(user){
-authUI(true,user);
-loadTeams();
+document.getElementById("auth").classList.add("hidden");
+document.getElementById("dashboard").classList.remove("hidden");
+userEmail.innerText=user.email;
+
+if(user.email===ADMIN){
+adminPanel.style.display="block";
+}
+
+loadAll();
+
 }else{
-authUI(false);
+document.getElementById("auth").classList.remove("hidden");
+document.getElementById("dashboard").classList.add("hidden");
 }
 });
 
-function authUI(state,user){
-document.getElementById("auth").classList.toggle("hidden",state);
-document.getElementById("dashboard").classList.toggle("hidden",!state);
-if(user){
-document.getElementById("userEmail").innerText=user.email;
-}
-}
-
-// 🔥 CREATE TEAM
-function createTeam(){
-if(!auth.currentUser){
-alert("Login first!");
-return;
+// PLAYER
+function registerPlayer(){
+db.collection("players").add({
+name:playerName.value,
+ign:playerIGN.value,
+team:playerTeam.value,
+kills:0
+});
 }
 
-db.collection("teams").add({
-name: teamName.value,
-score: 0,
-createdBy: auth.currentUser.email
-}).then(()=>alert("Team Created"));
+// UPDATE MATCH + STAGE + RANKING
+function updateMatch(){
+
+db.collection("liveMatch").doc("current").set({
+teamA:teamA.value,
+teamB:teamB.value,
+killsA:parseInt(killsA.value||0),
+killsB:parseInt(killsB.value||0),
+stage:stage.value,
+status:"LIVE"
+});
+
+// ranking update
+updateScore(teamA.value,killsA.value);
+updateScore(teamB.value,killsB.value);
 }
 
-// 🔥 LOAD TEAMS
-function loadTeams(){
-db.collection("teams").onSnapshot(snap=>{
-teams.innerHTML="";
-score.innerHTML="";
-
-let arr=[];
-
+async function updateScore(team,kills){
+let snap=await db.collection("teams").where("name","==",team).get();
 snap.forEach(doc=>{
-let t = doc.data();
-arr.push(t);
-
-teams.innerHTML += <p>${t.name} - ${t.score}</p>;
+let newScore=(doc.data().score||0)+parseInt(kills||0);
+db.collection("teams").doc(doc.id).update({score:newScore});
 });
+}
 
-// scoreboard sorting
+function finishMatch(){
+db.collection("liveMatch").doc("current").update({status:"ENDED"});
+}
+
+// LOAD EVERYTHING
+function loadAll(){
+loadPlayers();
+loadLive();
+loadLeaderboard();
+loadStages();
+loadKnockout();
+}
+
+// PLAYERS
+function loadPlayers(){
+db.collection("players").onSnapshot(s=>{
+players.innerHTML="";
+s.forEach(d=>{
+let p=d.data();
+players.innerHTML+=<p>${p.name} (${p.ign}) - ${p.team}</p>;
+});
+});
+}
+
+// LIVE
+function loadLive(){
+db.collection("liveMatch").doc("current").onSnapshot(d=>{
+if(d.exists){
+let m=d.data();
+live.innerHTML=`
+<h3>${m.teamA} VS ${m.teamB}</h3>
+<p class="badge">${m.stage}</p>
+<p>Status: ${m.status}</p>
+<p>Kills: ${m.killsA} - ${m.killsB}</p>
+`;
+}
+});
+}
+
+// LEADERBOARD TRENDING
+function loadLeaderboard(){
+db.collection("teams").onSnapshot(s=>{
+leaderboard.innerHTML="";
+let arr=[];
+s.forEach(d=>arr.push(d.data()));
+
 arr.sort((a,b)=>b.score-a.score);
 
 arr.forEach((t,i)=>{
-score.innerHTML += <p>${i+1}. ${t.name} - ${t.score}</p>;
+leaderboard.innerHTML+=`
+<p class="rank">${i+1}. ${t.name} - ${t.score}</p>
+`;
 });
+});
+}
 
+// STAGES
+function loadStages(){
+db.collection("liveMatch").doc("current").onSnapshot(d=>{
+stages.innerHTML="";
+if(d.exists){
+let m=d.data();
+stages.innerHTML=`
+<div class="stage">Current Stage: ${m.stage}</div>
+<div class="stage">Match: ${m.teamA} vs ${m.teamB}</div>
+`;
+}
+});
+}
+
+// KNOCKOUT SIMPLE
+function loadKnockout(){
+db.collection("teams").onSnapshot(s=>{
+knockout.innerHTML="";
+let teams=[];
+s.forEach(d=>teams.push(d.data().name));
+
+for(let i=0;i<teams.length;i+=2){
+knockout.innerHTML+=`
+<div class="stage">
+${teams[i]||"TBD"} VS ${teams[i+1]||"TBD"}
+</div>
+`;
+}
 });
 }
 
