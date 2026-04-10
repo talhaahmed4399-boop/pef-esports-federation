@@ -2,17 +2,18 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>PFS Esports Federation</title>
+<title>PFS Esports Pro v2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {font-family: Arial; margin:0; background:#0f0f1a; color:white;}
-nav {background:#111; padding:10px; text-align:center;}
-nav button {margin:5px; padding:10px; background:#222; color:white; border:none; cursor:pointer;}
-section {display:none; padding:20px;}
-.active {display:block;}
-input, button {padding:10px; margin:5px; width:90%;}
-.card {background:#1c1c2b; padding:15px; margin:10px 0; border-radius:10px;}
+body{margin:0;font-family:Arial;background:#0f0f1a;color:white;}
+nav{background:#111;padding:10px;text-align:center;}
+nav button{margin:5px;padding:10px;background:#222;color:white;border:none;cursor:pointer;}
+section{display:none;padding:20px;}
+.card{background:#1c1c2b;padding:15px;margin:10px 0;border-radius:10px;}
+input,button{padding:10px;margin:5px;width:90%;}
+.hidden{display:none;}
+.small{font-size:12px;color:#aaa;}
 </style>
 </head>
 
@@ -21,12 +22,12 @@ input, button {padding:10px; margin:5px; width:90%;}
 <nav>
 <button onclick="show('login')">Login</button>
 <button onclick="show('signup')">Signup</button>
-<button onclick="show('dashboard')">Dashboard</button>
-<button onclick="show('admin')">Admin</button>
+<button onclick="show('dashboard')" id="dashBtn" class="hidden">Dashboard</button>
+<button onclick="show('admin')" id="adminBtn" class="hidden">Admin</button>
 </nav>
 
 <!-- LOGIN -->
-<section id="login" class="active">
+<section id="login" style="display:block;">
 <h2>Login</h2>
 <input id="loginEmail" placeholder="Email">
 <input id="loginPass" type="password" placeholder="Password">
@@ -37,119 +38,172 @@ input, button {padding:10px; margin:5px; width:90%;}
 <section id="signup">
 <h2>Signup</h2>
 <input id="signupEmail" placeholder="Email">
-<input id="signupPass" type="password" placeholder="Password">
+<input id="signupPass" type="password">
 <button onclick="signup()">Create Account</button>
+<p class="small">Admin Email: admin@pfs.com</p>
 </section>
 
 <!-- DASHBOARD -->
 <section id="dashboard">
-<h2>Team Registration</h2>
+<h2>🎮 Teams Dashboard</h2>
+
+<div class="card">
+<h3>🏆 Register Team</h3>
 <input id="teamName" placeholder="Team Name">
-<input id="playerName" placeholder="Leader Name">
-<button onclick="saveTeam()">Register Team</button>
+<input id="leaderName" placeholder="Leader Name">
+<button onclick="addTeam()">Add Team</button>
+</div>
 
 <div id="teams"></div>
+
 </section>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN -->
 <section id="admin">
-<h2>Admin Panel (All Teams)</h2>
+<h2>👑 Admin Control Panel</h2>
+
+<div class="card">
+<h3>📊 All Registered Teams</h3>
 <div id="adminTeams"></div>
+</div>
+
 </section>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { 
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword 
-} from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword }
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
-import {
-getFirestore,
-collection,
-addDoc,
-getDocs
-} from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc }
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
-/* 🔥 YOUR FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyAowtYIS_HuN6MOYDC7cv_Rtb_jylm1A1Y",
   authDomain: "pef-esports-federation.firebaseapp.com",
   projectId: "pef-esports-federation",
   storageBucket: "pef-esports-federation.firebasestorage.app",
   messagingSenderId: "990873596300",
-  appId: "1:990873596300:web:97b6cea53b651e44d3e6a9",
-  measurementId: "G-7FMN84766W"
+  appId: "1:990873596300:web:97b6cea53b651e44d3e6a9"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* PAGE SWITCH */
+let isAdmin = false;
+
+/* ADMIN EMAIL */
+const ADMIN_EMAIL = "admin@pfs.com";
+
+/* NAV CONTROL */
 window.show = function(page){
-document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-document.getElementById(page).classList.add("active");
-if(page=="admin") loadAdmin();
+
+if(!isAdmin && page=="admin"){
+alert("Admin only area!");
+return;
+}
+
+if(page=="dashboard" && !auth.currentUser){
+alert("Login required!");
+return;
+}
+
+document.querySelectorAll("section").forEach(s=>s.style.display="none");
+document.getElementById(page).style.display="block";
+
 if(page=="dashboard") loadTeams();
+if(page=="admin") loadAdmin();
 }
 
 /* SIGNUP */
 window.signup = function(){
-let email = signupEmail.value;
-let pass = signupPass.value;
-
-createUserWithEmailAndPassword(auth, email, pass)
+createUserWithEmailAndPassword(auth, signupEmail.value, signupPass.value)
 .then(()=>alert("Account Created"))
 .catch(e=>alert(e.message));
 }
 
 /* LOGIN */
 window.login = function(){
-let email = loginEmail.value;
-let pass = loginPass.value;
+signInWithEmailAndPassword(auth, loginEmail.value, loginPass.value)
+.then((user)=>{
+alert("Login Success");
 
-signInWithEmailAndPassword(auth, email, pass)
-.then(()=>alert("Login Success"))
+if(user.user.email === ADMIN_EMAIL){
+isAdmin = true;
+adminBtn.classList.remove("hidden");
+}
+
+dashBtn.classList.remove("hidden");
+show("dashboard");
+})
 .catch(e=>alert(e.message));
 }
 
-/* SAVE TEAM */
-window.saveTeam = async function(){
+/* ADD TEAM */
+window.addTeam = async function(){
 await addDoc(collection(db,"teams"),{
-team: teamName.value,
-leader: playerName.value
+name: teamName.value,
+leader: leaderName.value,
+time: new Date().toLocaleString()
 });
-alert("Team Registered!");
 loadTeams();
 }
 
-/* LOAD USER TEAMS */
+/* LOAD TEAMS */
 window.loadTeams = async function(){
-let q = await getDocs(collection(db,"teams"));
-let html = "";
-q.forEach(doc=>{
-html += `<div class="card">
-<b>${doc.data().team}</b><br>
-Leader: ${doc.data().leader}
+let data = await getDocs(collection(db,"teams"));
+let html="";
+
+data.forEach(d=>{
+html+=`
+<div class="card">
+🏆 ${d.data().name}<br>
+👤 ${d.data().leader}<br>
+🕒 ${d.data().time}
 </div>`;
 });
-teams.innerHTML = html;
+
+teams.innerHTML=html;
 }
 
-/* ADMIN LOAD */
+/* ADMIN LOAD (WITH DELETE + EDIT) */
 window.loadAdmin = async function(){
-let q = await getDocs(collection(db,"teams"));
-let html = "";
-q.forEach(doc=>{
-html += `<div class="card">
-🏆 ${doc.data().team}<br>
-👤 ${doc.data().leader}
+let data = await getDocs(collection(db,"teams"));
+let html="";
+
+data.forEach(d=>{
+html+=`
+<div class="card">
+🏆 ${d.data().name}<br>
+👤 ${d.data().leader}<br>
+<button onclick="deleteTeam('${d.id}')">Delete</button>
+<button onclick="editTeam('${d.id}')">Edit</button>
 </div>`;
 });
-adminTeams.innerHTML = html;
+
+adminTeams.innerHTML=html;
+}
+
+/* DELETE */
+window.deleteTeam = async function(id){
+await deleteDoc(doc(db,"teams",id));
+loadAdmin();
+loadTeams();
+}
+
+/* EDIT */
+window.editTeam = async function(id){
+let newName = prompt("New Team Name:");
+let newLeader = prompt("New Leader Name:");
+
+await updateDoc(doc(db,"teams",id),{
+name:newName,
+leader:newLeader
+});
+
+loadAdmin();
+loadTeams();
 }
 
 </script>
