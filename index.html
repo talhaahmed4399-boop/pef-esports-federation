@@ -2,18 +2,56 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>PFS Esports Pro v2</title>
+<title>Esports Federation System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{margin:0;font-family:Arial;background:#0f0f1a;color:white;}
-nav{background:#111;padding:10px;text-align:center;}
-nav button{margin:5px;padding:10px;background:#222;color:white;border:none;cursor:pointer;}
-section{display:none;padding:20px;}
-.card{background:#1c1c2b;padding:15px;margin:10px 0;border-radius:10px;}
-input,button{padding:10px;margin:5px;width:90%;}
+body{
+margin:0;
+font-family:Arial;
+background:#0b0f1a;
+color:white;
+}
+
+nav{
+background:#111;
+padding:10px;
+text-align:center;
+}
+
+nav button{
+margin:5px;
+padding:10px;
+background:#1c1f2e;
+color:white;
+border:none;
+cursor:pointer;
+border-radius:6px;
+}
+
+section{
+display:none;
+padding:20px;
+}
+
+.card{
+background:#151a2b;
+padding:15px;
+margin:10px 0;
+border-radius:10px;
+}
+
+input,button{
+padding:10px;
+margin:5px;
+width:90%;
+border-radius:6px;
+border:none;
+}
+
 .hidden{display:none;}
-.small{font-size:12px;color:#aaa;}
+
+h2{color:#00d4ff;}
 </style>
 </head>
 
@@ -28,7 +66,7 @@ input,button{padding:10px;margin:5px;width:90%;}
 
 <!-- LOGIN -->
 <section id="login" style="display:block;">
-<h2>Login</h2>
+<h2>🔐 Login</h2>
 <input id="loginEmail" placeholder="Email">
 <input id="loginPass" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
@@ -36,34 +74,48 @@ input,button{padding:10px;margin:5px;width:90%;}
 
 <!-- SIGNUP -->
 <section id="signup">
-<h2>Signup</h2>
+<h2>🆕 Signup</h2>
 <input id="signupEmail" placeholder="Email">
 <input id="signupPass" type="password">
 <button onclick="signup()">Create Account</button>
-<p class="small">Admin Email: admin@pfs.com</p>
 </section>
 
 <!-- DASHBOARD -->
 <section id="dashboard">
-<h2>🎮 Teams Dashboard</h2>
+<h2>🎮 Esports Dashboard</h2>
 
 <div class="card">
-<h3>🏆 Register Team</h3>
+<h3>🏆 Team Registration</h3>
 <input id="teamName" placeholder="Team Name">
 <input id="leaderName" placeholder="Leader Name">
-<button onclick="addTeam()">Add Team</button>
+<button onclick="addTeam()">Register Team</button>
 </div>
 
+<div class="card">
+<h3>📊 Teams</h3>
 <div id="teams"></div>
+</div>
+
+<div class="card">
+<h3>📅 Tournaments</h3>
+<p>🔥 PUBG Scrims Season</p>
+<p>🔥 Weekly Clash Cup</p>
+<p>🔥 Pro League Qualifiers</p>
+</div>
+
+<div class="card">
+<h3>📢 Announcements</h3>
+<p>New season starting soon 🚀</p>
+</div>
 
 </section>
 
 <!-- ADMIN -->
 <section id="admin">
-<h2>👑 Admin Control Panel</h2>
+<h2>👑 Admin Panel</h2>
 
 <div class="card">
-<h3>📊 All Registered Teams</h3>
+<h3>All Registered Teams</h3>
 <div id="adminTeams"></div>
 </div>
 
@@ -75,7 +127,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/fireba
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword }
 from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc }
+import { getFirestore, collection, addDoc, getDocs }
 from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -91,20 +143,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let isAdmin = false;
-
-/* ADMIN EMAIL */
-const ADMIN_EMAIL = "admin@pfs.com";
+let loggedIn = false;
 
 /* NAV CONTROL */
 window.show = function(page){
 
-if(!isAdmin && page=="admin"){
-alert("Admin only area!");
-return;
-}
-
-if(page=="dashboard" && !auth.currentUser){
+if(!loggedIn && (page=="dashboard" || page=="admin")){
 alert("Login required!");
 return;
 }
@@ -126,15 +170,11 @@ createUserWithEmailAndPassword(auth, signupEmail.value, signupPass.value)
 /* LOGIN */
 window.login = function(){
 signInWithEmailAndPassword(auth, loginEmail.value, loginPass.value)
-.then((user)=>{
-alert("Login Success");
-
-if(user.user.email === ADMIN_EMAIL){
-isAdmin = true;
-adminBtn.classList.remove("hidden");
-}
-
+.then(()=>{
+loggedIn=true;
 dashBtn.classList.remove("hidden");
+adminBtn.classList.remove("hidden");
+alert("Login Success");
 show("dashboard");
 })
 .catch(e=>alert(e.message));
@@ -143,67 +183,39 @@ show("dashboard");
 /* ADD TEAM */
 window.addTeam = async function(){
 await addDoc(collection(db,"teams"),{
-name: teamName.value,
+team: teamName.value,
 leader: leaderName.value,
 time: new Date().toLocaleString()
 });
 loadTeams();
 }
 
-/* LOAD TEAMS */
+/* LOAD USER TEAMS */
 window.loadTeams = async function(){
 let data = await getDocs(collection(db,"teams"));
 let html="";
-
 data.forEach(d=>{
 html+=`
 <div class="card">
-🏆 ${d.data().name}<br>
-👤 ${d.data().leader}<br>
-🕒 ${d.data().time}
+🏆 ${d.data().team}<br>
+👤 ${d.data().leader}
 </div>`;
 });
-
 teams.innerHTML=html;
 }
 
-/* ADMIN LOAD (WITH DELETE + EDIT) */
+/* ADMIN PANEL */
 window.loadAdmin = async function(){
 let data = await getDocs(collection(db,"teams"));
 let html="";
-
 data.forEach(d=>{
 html+=`
 <div class="card">
-🏆 ${d.data().name}<br>
-👤 ${d.data().leader}<br>
-<button onclick="deleteTeam('${d.id}')">Delete</button>
-<button onclick="editTeam('${d.id}')">Edit</button>
+🔥 ${d.data().team}<br>
+👤 ${d.data().leader}
 </div>`;
 });
-
 adminTeams.innerHTML=html;
-}
-
-/* DELETE */
-window.deleteTeam = async function(id){
-await deleteDoc(doc(db,"teams",id));
-loadAdmin();
-loadTeams();
-}
-
-/* EDIT */
-window.editTeam = async function(id){
-let newName = prompt("New Team Name:");
-let newLeader = prompt("New Leader Name:");
-
-await updateDoc(doc(db,"teams",id),{
-name:newName,
-leader:newLeader
-});
-
-loadAdmin();
-loadTeams();
 }
 
 </script>
