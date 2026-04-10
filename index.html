@@ -2,182 +2,157 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PF Esports</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PF Esports PRO</title>
+
+<!-- Firebase Compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 <style>
-body{font-family:Arial;margin:0;background:#0f172a;color:white;}
-.hidden{display:none;}
-nav{background:#020617;padding:10px;display:flex;justify-content:space-between;}
-.sidebar{width:220px;background:#020617;height:100vh;position:fixed;padding-top:60px;}
-.sidebar button{display:block;width:100%;padding:15px;background:none;color:white;border:none;text-align:left;}
-.sidebar button:hover{background:#1e293b;}
-.content{margin-left:240px;padding:20px;}
-.card{background:#1e293b;padding:20px;border-radius:10px;margin-bottom:15px;}
-input,button{padding:10px;width:100%;margin:5px 0;}
-button{background:#3b82f6;color:white;border:none;}
+body{font-family:Arial;background:#0f172a;color:white;margin:0;padding:0}
+.card{background:#1e293b;padding:20px;border-radius:10px;margin:10px}
+input,button{padding:10px;margin:5px;width:100%;border-radius:5px;border:none}
+button{background:#3b82f6;color:white;cursor:pointer}
+.hidden{display:none}
 </style>
 </head>
+
 <body>
 
+<!-- AUTH -->
 <div id="auth">
-<div class="card">
-<h2>PF Esports</h2>
-
-<div id="signup">
-<input id="s_name" placeholder="Name">
-<input id="s_user" placeholder="Username">
-<input id="s_ign" placeholder="IGN">
-<input id="s_pass" type="password" placeholder="Password">
-<button onclick="signup()">Signup</button>
-<p onclick="showLogin()">Login</p>
+  <div class="card">
+    <h2>PF Esports PRO</h2>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
+    <button onclick="login()">Login</button>
+  </div>
 </div>
 
-<div id="login" class="hidden">
-<input id="l_user" placeholder="Username">
-<input id="l_pass" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<p onclick="showSignup()">Signup</p>
-<p onclick="adminLogin()">Admin Login</p>
-</div>
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
 
-</div>
-</div>
+  <div class="card">
+    <h3>Profile</h3>
+    <p id="userEmail"></p>
+    <button onclick="logout()">Logout</button>
+  </div>
 
-<div id="app" class="hidden">
-<nav>
-<span>PF Esports</span>
-<button onclick="logout()">Logout</button>
-</nav>
+  <div class="card">
+    <h3>Create Team</h3>
+    <input id="teamName" placeholder="Team Name">
+    <button onclick="createTeam()">Create</button>
+  </div>
 
-<div class="sidebar">
-<button onclick="page('profile')">Profile</button>
-<button onclick="page('teams')">Teams</button>
-<button onclick="page('create')">Create Team</button>
-<button onclick="page('score')">Scoreboard</button>
-<button onclick="page('admin')">Admin</button>
-</div>
+  <div class="card">
+    <h3>Teams</h3>
+    <div id="teams"></div>
+  </div>
 
-<div class="content">
+  <div class="card">
+    <h3>Scoreboard</h3>
+    <div id="score"></div>
+  </div>
 
-<div id="profile" class="card"></div>
-
-<div id="teams" class="card"></div>
-
-<div id="create" class="card">
-<input id="t_name" placeholder="Team Name">
-<input id="p1" placeholder="Player1">
-<input id="p2" placeholder="Player2">
-<input id="p3" placeholder="Player3">
-<input id="p4" placeholder="Player4">
-<button onclick="createTeam()">Create</button>
-</div>
-
-<div id="score" class="card"></div>
-
-<div id="admin" class="card hidden">
-<h3>Admin Panel</h3>
-<input id="a_team" placeholder="Team Name">
-<input id="a_score" type="number" placeholder="Score">
-<button onclick="updateScore()">Update Score</button>
-<button onclick="toggleReg()">Toggle Registration</button>
-<p id="regStatus"></p>
-</div>
-
-</div>
 </div>
 
 <script>
-let users = JSON.parse(localStorage.getItem("users"))||[];
-let teams = JSON.parse(localStorage.getItem("teams"))||[];
-let current = JSON.parse(localStorage.getItem("session"));
-let regOpen = JSON.parse(localStorage.getItem("reg")) ?? true;
 
-function save(){
-localStorage.setItem("users",JSON.stringify(users));
-localStorage.setItem("teams",JSON.stringify(teams));
-localStorage.setItem("session",JSON.stringify(current));
-localStorage.setItem("reg",JSON.stringify(regOpen));
-}
+// 🔥 FIREBASE CONFIG (YOUR ORIGINAL)
+const firebaseConfig = {
+  apiKey: "AIzaSyAowtYIS_HuN6MOYDC7cv_Rtb_jylm1A1Y",
+  authDomain: "pef-esports-federation.firebaseapp.com",
+  projectId: "pef-esports-federation",
+  storageBucket: "pef-esports-federation.appspot.com",
+  messagingSenderId: "990873596300",
+  appId: "1:990873596300:web:97b6cea53b651e44d3e6a9",
+  measurementId: "G-7FMN84766W"
+};
 
-function showLogin(){signup.classList.add('hidden');login.classList.remove('hidden');}
-function showSignup(){login.classList.add('hidden');signup.classList.remove('hidden');}
+// INIT
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
+
+// 🔥 SIGNUP
 function signup(){
-if(!regOpen) return alert("Registration Closed");
-let u={name:s_name.value,user:s_user.value,ign:s_ign.value,pass:s_pass.value};
-if(!u.name||!u.user||!u.ign||!u.pass) return alert("Fill all");
-if(users.find(x=>x.user===u.user)) return alert("Exists");
-users.push(u); save(); alert("Done"); showLogin();
+auth.createUserWithEmailAndPassword(email.value, password.value)
+.then(()=>alert("Signup Success"))
+.catch(err=>alert(err.message));
 }
 
+// 🔥 LOGIN
 function login(){
-let u=users.find(x=>x.user==l_user.value && x.pass==l_pass.value);
-if(!u) return alert("Wrong");
-current=u; save(); loadApp();
+auth.signInWithEmailAndPassword(email.value, password.value)
+.catch(err=>alert(err.message));
 }
 
-function adminLogin(){
-if(prompt("User")=="admin" && prompt("Pass")=="admin"){
-current="admin"; save(); loadApp(true);
-}
-}
-
-function loadApp(admin=false){
-auth.classList.add('hidden');
-app.classList.remove('hidden');
-if(current=="admin"){admin=true;document.getElementById('admin').classList.remove('hidden');}
-render();
+// 🔥 LOGOUT
+function logout(){
+auth.signOut();
 }
 
-function logout(){localStorage.removeItem("session");location.reload();}
-
-function page(id){
-document.querySelectorAll('.content .card').forEach(x=>x.classList.add('hidden'));
-document.getElementById(id).classList.remove('hidden');
-render();
+// 🔥 AUTH STATE
+auth.onAuthStateChanged(user=>{
+if(user){
+authUI(true,user);
+loadTeams();
+}else{
+authUI(false);
 }
-
-function render(){
-profile.innerHTML = current!="admin" ? `
-Name: ${current.name}<br>
-Username: ${current.user}<br>
-IGN: ${current.ign}
-` : "Admin";
-
-teams.innerHTML="";
-teams.forEach(t=>{
-teams.innerHTML += <p>${t.name} | ${t.players.join(', ')} | Score:${t.score}</p>;
 });
 
+function authUI(state,user){
+document.getElementById("auth").classList.toggle("hidden",state);
+document.getElementById("dashboard").classList.toggle("hidden",!state);
+if(user){
+document.getElementById("userEmail").innerText=user.email;
+}
+}
+
+// 🔥 CREATE TEAM
+function createTeam(){
+if(!auth.currentUser){
+alert("Login first!");
+return;
+}
+
+db.collection("teams").add({
+name: teamName.value,
+score: 0,
+createdBy: auth.currentUser.email
+}).then(()=>alert("Team Created"));
+}
+
+// 🔥 LOAD TEAMS
+function loadTeams(){
+db.collection("teams").onSnapshot(snap=>{
+teams.innerHTML="";
 score.innerHTML="";
-teams.sort((a,b)=>b.score-a.score).forEach((t,i)=>{
+
+let arr=[];
+
+snap.forEach(doc=>{
+let t = doc.data();
+arr.push(t);
+
+teams.innerHTML += <p>${t.name} - ${t.score}</p>;
+});
+
+// scoreboard sorting
+arr.sort((a,b)=>b.score-a.score);
+
+arr.forEach((t,i)=>{
 score.innerHTML += <p>${i+1}. ${t.name} - ${t.score}</p>;
 });
 
-regStatus.innerText = regOpen ? "OPEN" : "CLOSED";
+});
 }
 
-function createTeam(){
-let t={
-name:t_name.value,
-players:[p1.value,p2.value,p3.value,p4.value],
-score:0
-};
-if(!t.name||t.players.includes("")) return alert("Fill all");
-teams.push(t); save(); render();
-}
-
-function updateScore(){
-let t=teams.find(x=>x.name==a_team.value);
-if(!t) return alert("Not found");
-t.score=parseInt(a_score.value);
-save(); render();
-}
-
-function toggleReg(){
-regOpen=!regOpen; save(); render();
-}
-
-if(current) loadApp();
 </script>
 
 </body>
